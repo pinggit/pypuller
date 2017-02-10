@@ -1,0 +1,3 @@
+show version
+show interface lo0 terse
+show system uptime

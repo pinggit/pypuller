@@ -1,0 +1,71 @@
+--- # script parameters
+normalize     : True
+package       : '/var/tmp/junos-install-mx-x86-64-15.1F2-S13.tgz'
+iteration_max : 2
+iteration     : 0
+attempt_max   : 2
+attempt       : 0
+user          : 'labroot'
+password      : 'lab123'
+router_file   : './router-lists.txt'
+cli_file      : './cli-lists.txt'
+log_dir       : os.path.expanduser('~/pypuller_logs')
+# if not os.path.exists(log_dir): os.makedirs(log_dir)
+commit        : False
+
+--- # router and cli list
+hosts : [172.19.161.123 172.19.164.5 matrix-re0.ultralab.juniper.net]
+clies : &clies
+      [show version, show interface lo0 terse, show system uptime]
+Router1:
+    - hostname : 172.19.161.123
+      re0      : 172.19.161.124
+      re1      : 172.19.161.125
+      access   :
+          login: labroot
+          passwd: lab123
+
+    - type: mx960
+      clies:
+          - "show version"
+          - "show interface terse lo0"
+Router2:
+    - hostname : 172.19.164.5
+      re0      : 172.19.164.6
+      re1      : 172.19.164.7
+      access   : {login: 923768, passwd: 356669}
+    - type     : mx480
+      clies    : *clies
+
+# this does not work
+#      <<: *clies
+
+# ipdb> pp(pyaml_list)                                                                
+# [
+#     {'clies': ['show version', 'show interface lo0 terse', 'show system uptime'],      
+#      'hosts': ['172.19.161.123 172.19.164.5 matrix-re0.ultralab.juniper.net']},        
+# 
+#
+#     {'Router1': 
+#         [
+#             {'access': 
+#                 {'login': 'labroot', 'passwd': 'lab123'},                  
+#               'hostname': '172.19.161.123',                                        
+#               're0': '172.19.161.124',                                             
+#               're1': '172.19.161.125'},                                            
+#             {'clies': ['show version', 'show interface terse lo0'],               
+# 	     'type': 'mx960'}
+#         ],                                                   
+#      'Router2': 
+#         [
+#             {'access': 
+#                 {'login': 923768, 'passwd': 356669},                       
+#              'hostname': '172.19.164.5',                                          
+#              're0': '172.19.164.6',                                               
+#              're1': '172.19.164.7'
+#             },                                              
+# 	 {'clies': ['show version', 'show system uptime'],                     
+# 	  'type': 'mx480'}
+#         ]
+#     }
+# ] 
