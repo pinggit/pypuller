@@ -377,88 +377,37 @@ def save_cli_mprocess_mthread(host_list, cli_list, fname=None):              # {
         p.join()
 def main():                     # {{{1}}}
     global re0, user, password, dev, normalize
-    if 0:   # apply_async (not working) {{{2}}}
-        dev = get_master_re(host, user, password)
-        p = Pool()
-        print ">>>%s one process to test_issu ..." % curr_time()
-        test_issu_result = p.apply_async(test_issu, args=(user, password,))
-        test_issu_result.get()
-        print ">>>%s one process to show command ..." % curr_time()
-        show_chassis_fpc_result = p.apply_async(show_chassis_fpc,
-                                                args=(user, password,))
-        show_chassis_fpc_result.get()
-        p.apply_async(long_time_task, args=(1,))
-        print '>>>%s Waiting for all subprocesses done...' % curr_time()
-        p.close()
-        p.join()
-    if 0:   # Process {{{2}}}
-        jobs = []
-        normalize = False
-        dev = get_master_re(masterre, user, password)
-        dev.open()
-        print ">>>%s one process to show command ..." % curr_time()
-        p = multiprocessing.Process(name='test_show_chassis_fpc',
-                                    target=test_show_chassis_fpc, args=())
-        p.daemon = True
-        jobs.append(p)
-        print ">>>%s one process to collect rsi..." % curr_time()
-        p = multiprocessing.Process(name='rsi', target=rsi, args=())
-        p.daemon = True
-        jobs.append(p)
-        for p in jobs:
-            p.start()
-        for p in jobs:
-            p.join()
-    if 1:   # scanning routers: mp+mt{{{2}}}
-        host_list = []
-        cli_list  = []
-        try:
-            with open(router_file, 'r') as f:
-                for line in f:
-                    if not line.strip() == '':
-                        host_list.append(line.strip())
-        except Exception:
-            print "file open ERROR", router_file
-        try:
-            with open(cli_file, 'r') as f:
-                for line in f:
-                    if not line.strip() == '':
-                        cli_list.append(line.strip())
-        except Exception:
-            print "file open ERROR", cli_file
-        mylogger.debug("host_list read %s" % host_list)
-        mylogger.debug("cli_list read %s" % cli_list)
-        fyaml = file('pypuller.yaml', 'r')
-        pyaml = yaml.load_all(fyaml)
-        pyaml_list = list(pyaml)
-        mylogger.debug("the yaml data looks:")
-        for pyaml1 in pyaml_list:
-            mylogger.debug(pprint.pformat(pyaml1))
-        host_list = pyaml_list[1]['hosts']
-        cli_list  = pyaml_list[1]['clies']
-        mylogger.debug("hosts: %s" % '. '.join(map(str, host_list)))
-        mylogger.debug("clis: %s"    % ', '.join(map(str, cli_list)))
-        sys.exit()
-        save_cli_mprocess_mthread(host_list, cli_list)
-        if commit:
-            git_submit()
-    if 0:   # simple test {{{2}}}
-        import ipdb; ipdb.set_trace()  # XXX BREAKPOINT
-        normalize = False
-        dev = get_master_re(masterre, user, password)
-        router_conf_file = "%s_%s" % (dev.hostname, curr_time())
-        router_conf_file = dev.hostname
-        rpc_get_config = dev.rpc.get_config()
-        rpc_get_interface_info = dev.rpc.get_interface_information(
-                                                    {'format': 'text'},
-                                                    interface_name='lo0',
-                                                    terse=True)
-        rpc_get_interface_info = etree.tostring(rpc_get_interface_info)
-        mylogger.debug("now write result to %s" % router_conf_file)
-        write_file(router_conf_file, rpc_get_interface_info)
-    if 0:   # mt test {{{2}}}
-        cli_list = ["show version", "show interface lo0 terse", "show system uptime"]
-        save_cli_mthread(masterre, cli_list)
+    host_list = []
+    cli_list  = []
+    try:
+	with open(router_file, 'r') as f:
+	    for line in f:
+		if not line.strip() == '':
+		    host_list.append(line.strip())
+    except Exception:
+	print "file open ERROR", router_file
+    try:
+	with open(cli_file, 'r') as f:
+	    for line in f:
+		if not line.strip() == '':
+		    cli_list.append(line.strip())
+    except Exception:
+	print "file open ERROR", cli_file
+    mylogger.debug("host_list read %s" % host_list)
+    mylogger.debug("cli_list read %s" % cli_list)
+    fyaml = file('pypuller.yaml', 'r')
+    pyaml = yaml.load_all(fyaml)
+    pyaml_list = list(pyaml)
+    mylogger.debug("the yaml data looks:")
+    for pyaml1 in pyaml_list:
+	mylogger.debug(pprint.pformat(pyaml1))
+    host_list = pyaml_list[1]['hosts']
+    cli_list  = pyaml_list[1]['clies']
+    mylogger.debug("hosts: %s" % '. '.join(map(str, host_list)))
+    mylogger.debug("clis: %s"    % ', '.join(map(str, cli_list)))
+    save_cli_mprocess_mthread(host_list, cli_list)
+    if commit:
+	git_submit()
 if __name__ == '__main__':          # {{{1}}}
     name = multiprocessing.current_process().name
     print '====%s Parent process %s, PID(%s)...' % (curr_time(), name, os.getpid())
