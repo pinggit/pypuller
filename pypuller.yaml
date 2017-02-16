@@ -1,45 +1,83 @@
---- # script parameters
+--- # script parameters {{{1}}}
+user          : 'labroot'               # -u
+password      : 'lab123'                # -p
+router_file   : './router-lists.txt'    # -R
+cli_file      : './cli-lists.txt'       # -C
+log_dir       : '~/pypuller_logs'       # -l
+commit        : False                   # -g
+
 normalize     : True
 package       : '/var/tmp/junos-install-mx-x86-64-15.1F2-S13.tgz'
 iteration_max : 2
-iteration     : 0
 attempt_max   : 2
-attempt       : 0
-user          : 'labroot'
-password      : 'lab123'
-router_file   : './router-lists.txt'
-cli_file      : './cli-lists.txt'
-log_dir       : os.path.expanduser('~/pypuller_logs')
-# if not os.path.exists(log_dir): os.makedirs(log_dir)
-commit        : False
 
---- # router and cli list
-hosts : [172.19.161.123 172.19.164.5 matrix-re0.ultralab.juniper.net]
+--- # individual host {{{1}}}
+hosts : ['172.19.161.123', '172.19.164.5', 'matrix-re0.ultralab.juniper.net']
 clies : &clies
-      [show version, show interface lo0 terse, show system uptime]
+     ['show chassis hardware', 'show system core', 'show system uptime']
+
 Router1:
     - hostname : 172.19.161.123
       re0      : 172.19.161.124
       re1      : 172.19.161.125
       access   :
-          login: labroot
-          passwd: lab123
+          user  : labroot
+          passwd : lab123
+          su     : Juniper1
 
-    - type: mx960
-      clies:
+    - clies:
           - "show version"
           - "show interface terse lo0"
+
 Router2:
     - hostname : 172.19.164.5
       re0      : 172.19.164.6
       re1      : 172.19.164.7
-      access   : {login: 923768, passwd: 356669}
-    - type     : mx480
-      clies    : *clies
+      access   : {user: 923768, passwd: 356669, su: Juniper1}
+    - clies    : *clies
 
 # this does not work
 #      <<: *clies
-
+#
+# ipdb> pp(options)
+# {'attempt': 0,
+#  'attempt_max': 2,
+#  'cli_file': './cli-lists.txt',
+#  'cli_list': ['show version',
+#               'show interface lo0 terse',
+#               'show system uptime'],
+#  'commit': False,
+#  'debug': True,
+#  'host': {'Router1': [{'access': {'login': 'labroot',
+#                                   'passwd': 'lab123',
+#                                   'su': 'Juniper1'},
+#                        'hostname': '172.19.161.123',
+#                        're0': '172.19.161.124',
+#                        're1': '172.19.161.125'},
+#                       {'clies': ['show version',
+#                                  'show interface terse lo0']}],
+#           'Router2': [{'access': {'login': 923768,
+#                                   'passwd': 356669,
+#                                   'su': 'Juniper1'},
+#                        'hostname': '172.19.164.5',
+#                        're0': '172.19.164.6',
+#                        're1': '172.19.164.7'},
+#                       {'clies': ['show version',
+#                                  'show interface lo0 terse',
+#                                  'show system uptime']}]},
+#  'host_list': ['172.19.161.123',
+#                '172.19.164.5',
+#                'matrix-re0.ultralab.juniper.net'],
+#  'iteration': 0,
+#  'iteration_max': 2,
+#  'log_dir': '/home/pings/pypuller_logs',
+#  'normalize': True,
+#  'package': '/var/tmp/junos-install-mx-x86-64-15.1F2-S13.tgz',
+#  'password': 'lab123',
+#  'router_file': './router-lists.txt',
+#  'user': 'labroot',
+#  'yaml_file': './pypuller.yaml'}
+# 
 # ipdb> pp(pyaml_list)                                                                
 # [
 #     {'clies': ['show version', 'show interface lo0 terse', 'show system uptime'],      
@@ -52,9 +90,10 @@ Router2:
 #                 {'login': 'labroot', 'passwd': 'lab123'},                  
 #               'hostname': '172.19.161.123',                                        
 #               're0': '172.19.161.124',                                             
-#               're1': '172.19.161.125'},                                            
+#               're1': '172.19.161.125'
+#             },                                            
 #             {'clies': ['show version', 'show interface terse lo0'],               
-# 	     'type': 'mx960'}
+# 	       'type': 'mx960'}
 #         ],                                                   
 #      'Router2': 
 #         [
@@ -64,8 +103,8 @@ Router2:
 #              're0': '172.19.164.6',                                               
 #              're1': '172.19.164.7'
 #             },                                              
-# 	 {'clies': ['show version', 'show system uptime'],                     
-# 	  'type': 'mx480'}
+# 	      {'clies': ['show version', 'show system uptime'],                     
+# 	       'type': 'mx480'}
 #         ]
 #     }
 # ] 

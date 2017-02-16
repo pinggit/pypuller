@@ -1,0 +1,228 @@
+// vim:set ft=asciidoc syntax=ON :
+//generating PDF:
+//  asciidoctor-pdf -a allow-uri-read README.adoc
+//generating webpage:
+//  asciidoctor README.adoc
+= pypuller
+:doctype: book
+//this line is to generate a "side panel"
+:toc: right
+:toclevels: 3
+:toc-title: Table of Content
+//these below 2 lines are for github
+//:toc: manual
+//:toc-placement: preamble
+:numbered:
+:iconsdir: 
+:icons: font
+:source-highlighter: prettify
+//:prettify-theme:
+:source-highlighter: highlightjs
+:highlightjs-theme: googlecode
+:source-highlighter: pygments
+:pygments-linenums-mode: inline
+:source-highlighter: coderay
+:coderay-linenums-mode: table
+:coderay-linenums-mode: inline
+//:highlightjs-linenums-mode: inline
+//https://github.com/isagalaev/highlight.js/tree/master/src/styles
+:data-uri:
+:allow-uri-read:
+//:hardbreaks:
+:last-update-label!:
+//:nofooter:
+:sectanchors:
+//:sectlinks:
+:Author:  Ping Song
+:Author Initials: SP
+:Date:   Feb 2017
+:Email:   pings@juniper.net
+:title: pypuller
+:experimental:
+:stylesheetdir: {user-home}/Dropbox/asciidoctor-stylesheet-factory/stylesheets/
+:stylesheet: {stylesheetdir}foundation-potion.css
+:stylesheet: {stylesheetdir}foundation-lime.css
+//literal block frame is more clear, ".title" not obvious
+:stylesheet: {stylesheetdir}foundation.css
+//no much benefits highlight
+:stylesheet: {stylesheetdir}rocket-panda.css
+//".title" obvious (italics)
+:stylesheet: {stylesheetdir}asciidoctor.css
+//TOC red
+:stylesheet: {stylesheetdir}maker.css
+//extra frame for NOTE, seems compact
+:stylesheet: {stylesheetdir}readthedocs.css
+//much smaller font, seems no much other effect
+:stylesheet: {stylesheetdir}asciidoctor-compact.css
+:stylesheet: {stylesheetdir}asciidoctor-default.css
+:stylesheet: {stylesheetdir}github.css
+:stylesheet: {stylesheetdir}rubygems.css
+//black background for literal block, seems too sharp
+:stylesheet: {stylesheetdir}iconic.css
+:stylesheet: {stylesheetdir}riak.css
+//table header, tip/note red font, overall not bad
+:stylesheet: {stylesheetdir}colony.css
+//".title" not obvious, overall not bad
+:stylesheet: {stylesheetdir}golo.css            
+:tabledef-default.subs: normal,callouts 
+//seems no use
+:max-width: 150em
+
+== what is this
+
+"pypuller" is a small python script that scans configured routers and pulls
+info from them. for each router it spawns a new process, and this process will
+connect to the router and (if the connection succeeds) pull info by sending
+commands, and then save the output of the commands into a local file. for every
+command it sends, a new thread will be started. the performance is good because
+of the concurrency in both process and thread level. in theory, the overall
+duration when pulling multiple routers with multiple commands, will be roughly
+the same as processing time of the slowest command returned from one of the
+routers.
+
+== how to run
+
+to pull one command "show version" from one Junos device:
+
+    pings@PINGS-X240:~/pyez$ ./pypuller.py -r "punter.ultralab.juniper.net" -c "show version"
+
+to pull multiple commands, from multliple devices:
+
+    pings@PINGS-X240:~/pyez$ ./pypuller.py \
+	-r "punter.ultralab.juniper.net" \
+	-r "seahawks-re0.ultralab.juniper.net" \
+	-c "show version" -c "show system uptime"
+
+instead of specify each router and command from CLI (-r, -c), if
+router-list.txt or/and cli-lists.txt exists in same folder, read the router and
+cli list info from these files:
+
+    pings@PINGS-X240:~/pyez$ cat cli-lists.txt | head
+    show version
+    show interface lo0 terse
+    show system uptime
+    ......
+
+    pings@PINGS-X240:~/pyez$ cat router-lists.txt | head
+    matrix-re0.ultralab.juniper.net
+    mango-re0.ultralab.juniper.net
+    bombay-re1.ultralab.juniper.net
+    ......
+
+    pings@PINGS-X240:~/pyez$ ./pypuller.py
+
+if pypuller.yaml file exists in same folder, read the configuration from the file
+(this is default behavior, if pypuller.yaml file exists in the same folder)
+
+    pings@PINGS-X240:~/pyez$ ./pypuller.py -y pypuller.yaml
+
+or:
+
+    pings@PINGS-X240:~/pyez$ ./pypuller.py
+
+to suppress yaml file even if it exists, use "-y NONE"
+
+    pings@PINGS-X240:~/pyez$ ./pypuller.py -y NONE
+
+
+== CLI parameters
+
+    pings@PINGS-X240:~/pyez$ ./pypuller.py -h
+    usage: pypuller.py [-h] [-u USER] [-p PASSWORD] [-R ROUTER_FILE] [-C CLI_FILE]
+		       [-l LOG_DIR] [-y YAML_FILE] [-r HOST_LIST] [-c CLI_LIST]
+		       [-g] [--version] [-d | -t]
+
+    optional arguments:
+      -h, --help      show this help message and exit
+      -u USER         user name
+      -p PASSWORD     password
+      -R ROUTER_FILE  a file that has list of routers
+      -C CLI_FILE     a file that has list of CLIes
+      -l LOG_DIR      log dir
+      -y YAML_FILE    yaml_file, use "NONE" to suppress
+      -r HOST_LIST    Add hosts to a list
+      -c CLI_LIST     Add CLIes to a list
+      -g              commit to repo (via git)
+      --version       show program's version number and exit
+      -d, -dd         increase debug verbosity, -dd for even more info
+      -t, --terse     decrease verbosity
+
+== yaml file: pypuller.yaml
+
+this is why all parameters can be configured.
+it is useful if some routers have different attributres(access info, CLIes to
+pull), or need to run different commands 
+
+    --- # script parameters {{{1}}}
+    user          : 'labroot'               # -u
+    password      : 'lab123'                # -p
+    router_file   : './router-lists.txt'    # -R
+    cli_file      : './cli-lists.txt'       # -C
+    log_dir       : '~/pypuller_logs'       # -l
+    commit        : False                   # -g
+
+    normalize     : True
+    package       : '/var/tmp/junos-install-mx-x86-64-15.1F2-S13.tgz'
+    iteration_max : 2
+    attempt_max   : 2
+
+    --- # individual host {{{1}}}
+    hosts : ['172.19.161.123', '172.19.164.5', 'matrix-re0.ultralab.juniper.net']
+    clies : &clies
+	 ['show chassis hardware', 'show system core', 'show system uptime']
+
+    Router1:
+	- hostname : 172.19.161.123
+	  re0      : 172.19.161.124
+	  re1      : 172.19.161.125
+	  access   :
+	      user  : labroot
+	      passwd : lab123
+	      su     : Juniper1
+
+	- clies:
+	      - "show version"
+	      - "show interface terse lo0"
+
+    Router2:
+	- hostname : 172.19.164.5
+	  re0      : 172.19.164.6
+	  re1      : 172.19.164.7
+	  access   : {user: 923768, passwd: 356669, su: Juniper1}
+	- clies    : *clies
+
+
+== configuration/parameters processing flow
+
+    CLI > config file > default
+
+=== general options
+
+    CLI options > yaml > default
+
+=== router parameters/attributes (-u, -p, hostname, ...)
+
+    CLI options > yaml router specific > yaml general > default
+
+=== router-list/cli-list:
+
+    CLI options (-r, -c) > yaml > router_file and cli_file
+
+    default value
+
+    CLI options: router-file/cli-file exists?
+        yes: read from those files
+        no: read from default files: 
+            ./router-file.txt 
+            ./cli-file.txt
+
+    CLI options: yaml file exists?
+        yes, or no, but default yaml file (pypuller.yaml) exists:
+            read (and overide) all options from yaml:
+                * possibly router-list/cli-list
+                * all other options
+        no, and no default yaml file found:
+            pass
+
+    CLI options: other options
+

@@ -1,0 +1,525 @@
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 883 16084 command line options read:
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 884 16084 debug = 2
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 885 16084 user = None
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 886 16084 password = None
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 887 16084 router_file = None
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 888 16084 cli_file = None
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 889 16084 log_dir = None
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 890 16084 host_list = ['punter.ultralab.juniper.net']
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 891 16084 cli_list = ['show version']
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 892 16084 commit = False
+Wed 15 Feb 2017 23:27:53 VERBOSE pypuller.py 922 16084 host_list read from ./router-lists.txt: ['172.19.161.123', '172.19.164.5', 'matrix-re0.ultralab.juniper.net', 'mango-re0.ultralab.juniper.net', 'bombay-re1.ultralab.juniper.net', 'perth.ultralab.juniper.net', 'core1.ultralab.juniper.net', 'core2.ultralab.juniper.net', 'core3.ultralab.juniper.net', 'batman-re0.ultralab.juniper.net', 'robin-re0.ultralab.juniper.net', 'firefly-re1.ultralab.juniper.net', 'joker.ultralab.juniper.net', 'bane.ultralab.juniper.net', 'bluebird-re0.ultralab.juniper.net', 'hawkfire-re1.ultralab.juniper.net', 'yin-re0.ultralab.juniper.net', 'yang-re0.ultralab.juniper.net', 'kadal-re0.ultralab.juniper.net', 'kappal-re0.ultralab.juniper.net', 'jtac-mx80-r071.ultralab.juniper.net', 'jtac-mx80-r072.ultralab.juniper.net', '172.22.157.62', 'mason-re1.ultralab.juniper.net', 'caesar-re0.ultralab.juniper.net', 'dice-re0.ultralab.juniper.net', 'fairfax-re0.ultralab.juniper.net', 'geras-re0.ultralab.juniper.net', 'radish-re0.ultralab.juniper.net', 'celery.ultralab.juniper.net', 'leek-re0.ultralab.juniper.net', 'turnip.ultralab.juniper.net', 'norfolk-re0.ultralab.juniper.net', 'camaro-re0.ultralab.juniper.net', 'maxima.ultralab.juniper.net', 'mickey-re0.ultralab.juniper.net', 'bethesda-re0.ultralab.juniper.net', 'Kratos-re0.ultralab.juniper.net', 'Antalya-re0.ultralab.juniper.net', 'Rio-re0.ultralab.juniper.net', 'ashburn-re0.ultralab.juniper.net', 'beltway-re0.ultralab.juniper.net', 'Pacifix-re0.ultralab.juniper.net', 'Photogenix-re0.ultralab.juniper.net', 'Dogmatix-re0.ultralab.juniper.net', 'Automatix-re0.ultralab.juniper.net', 'Botanix-re0.ultralab.juniper.net', 'Idefix-re0.ultralab.juniper.net', 'Getafix-re0.ultralab.juniper.net', 'Alcoholix-re0.ultralab.juniper.net', 'styx-re0.ultralab.juniper.net', 'jaguars.ultralab.juniper.net', 'pontos-re0.ultralab.juniper.net', 'obelix-re0.ultralab.juniper.net', 'knicks-re0.ultralab.juniper.net', 'clippers.ultralab.juniper.net', 'texans.ultralab.juniper.net', 'mix.ultralab.juniper.net', 'dynamix.ultralab.juniper.net', 'prefix.ultralab.juniper.net', 'accord.ultralab.juniper.net', 'camry.ultralab.juniper.net', 'georgia.ultralab.juniper.net', 'tintin-re0.ultralab.juniper.net', 'kurt-re0.ultralab.juniper.net', 'wukong-re0.ultralab.juniper.net', 'daedalus-re0.ultralab.juniper.net', 'suns.ultralab.juniper.net', 'aldie-re0.ultralab.juniper.net', 'maya-re1.ultralab.juniper.net', 'rockets-re0.ultralab.juniper.net', 'willi-re0.ultralab.juniper.net', 'flip.ultralab.juniper.net', 'redskins-re0.ultralab.juniper.net', 'chiefs.ultralab.juniper.net', 'raiders.ultralab.juniper.net', 'tianjin-re0.ultralab.juniper.net', 'wickie.ultralab.juniper.net', 'nemesis-re0.ultralab.juniper.net', 'snorre.ultralab.juniper.net', 'punter.ultralab.juniper.net', 'greenbay.ultralab.juniper.net', 'brady.ultralab.juniper.net', 'maning.ultralab.juniper.net', 'asterix-re0.ultralab.juniper.net', 'timex-re0.ultralab.juniper.net', 'nyx-re0.ultralab.juniper.net', 'atlantix-re0.ultralab.juniper.net', 'sphinx.ultralab.juniper.net', 'phoenix.ultralab.juniper.net', 'chargers.ultralab.juniper.net', 'bears.ultralab.juniper.net', 'cacofonix-re0.ultralab.juniper.net', 'matrix-re0.ultralab.juniper.net', 'egypt.ultralab.juniper.net', 'turkey.ultralab.juniper.net', 'greece-re0.ultralab.juniper.net', 'holland-re0.ultralab.juniper.net', 'jtac-JA2500-r005.ultralab.juniper.net', 'jtac-JA2500-r006.ultralab.juniper.net', 'nereus.ultralab.juniper.net', 'colts.ultralab.juniper.net', 'eros.ultralab.juniper.net', 'sonata.jtac-east.jnpr.net', 'donald.jtac-east.jnpr.net', 'ares.jtac-east.jnpr.net', '10.85.4.54', '10.85.4.17', 'steelers.jtac-east.jnpr.net', 'saints.jtac-east.jnpr.net', '10.85.4.32', 'bajie.jtac-east.jnpr.net', 'lakers.jtac-east.jnpr.net', 'sonics.jtac-east.jnpr.net', 'seahwaks.jtac-east.jnpr.net', 'dolphins.jtac-east.jnpr.net', 'hermes.jtac-east.jnpr.net', 'penang.jtac-east.jnpr.net', 'mini.jtac-east.jnpr.net', 'hornets.jtac-east.jnpr.net', 'e07-17-re0.ultralab.juniper.net', 'e07-25-re0.ultralab.juniper.net', 'hypnos-re0.ultralab.juniper.net', 'panthers.ultralab.juniper.net', 'gilby.ultralab.juniper.net', 'mavericks.ultralab.juniper.net', 'alecto-re0.ultralab.juniper.net', 'halvar.ultralab.juniper.net', 'bills.jtac-east.jnpr.net', 'rams.jtac-east.jnpr.net', 'b05-22.ultralab.juniper.net', 'b05-24.ultralab.juniper.net', 'b05-26.ultralab.juniper.net', 'b05-28.ultralab.juniper.net', 'b05-30.ultralab.juniper.net', 'b05-31.ultralab.juniper.net', 'b05-32.ultralab.juniper.net', 'b05-33.ultralab.juniper.net', 'SRX5800-19_35.ultralab.juniper.net', 'SRX5800-18_19.ultralab.juniper.net']
+Wed 15 Feb 2017 23:27:53 VERBOSE pypuller.py 924 16084 cli_list read from ./cli-lists.txt: ['show version', 'show interface lo0 terse', 'show system uptime']
+Wed 15 Feb 2017 23:27:53 VERBOSE pypuller.py 939 16084 the yaml data looks:
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 963 16084 host_list after read from ./pypuller.yaml: ['Router2', 'Router1', '172.19.161.123', '172.19.164.5', 'matrix-re0.ultralab.juniper.net']
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 965 16084 cli_list after read from ./pypuller.yaml: ['show chassis hardware', 'show system core', 'show system uptime']
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 991 16084 final host_list: ['punter.ultralab.juniper.net']
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 992 16084 final cli_list: ['show version']
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 994 16084 after processing command line argument options looks:
+Wed 15 Feb 2017 23:27:53 INFO pypuller.py 1089 16084 ====Parent process MainProcess started, PID(16084)...
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 781 16084 get a host: punter.ultralab.juniper.net
+Wed 15 Feb 2017 23:27:53 INFO pypuller.py 655 14024 ===>Process punter.ultralab.juniper.net started, PID(14024)...
+Wed 15 Feb 2017 23:27:53 INFO pypuller.py 704 14024 connecting to punter.ultralab.juniper.net(punter.ultralab.juniper.net) ...
+Wed 15 Feb 2017 23:27:53 DEBUG pypuller.py 532 14024 attempt (0/2)!
+Wed 15 Feb 2017 23:27:58 INFO pypuller.py 584 14024 punter.ultralab.juniper.net connected!
+Wed 15 Feb 2017 23:27:58 INFO pypuller.py 626 14024 --->thread ""show version"" started, PID(14024)...
+Wed 15 Feb 2017 23:27:59 VERBOSE pypuller.py 635 14024 output of cli 'show version' looks:
+
+fpc0:
+--------------------------------------------------------------------------
+Hostname: Punter
+Model: qfx5100-96s-8q
+Junos: 14.1X53-D36.3
+JUNOS Base OS Software Suite [14.1X53-D36.3]
+JUNOS Base OS boot [14.1X53-D36.3]
+JUNOS Online Documentation [14.1X53-D36.3]
+JUNOS Crypto Software Suite [14.1X53-D36.3]
+JUNOS Kernel Software Suite [14.1X53-D36.3]
+JUNOS Packet Forwarding Engine Support (qfx-ex-x86-32) [14.1X53-D36.3]
+JUNOS Routing Software Suite [14.1X53-D36.3]
+JUNOS SDN Software Suite [14.1X53-D36.3]
+JUNOS Enterprise Software Suite [14.1X53-D36.3]
+JUNOS Web Management Platform Package [14.1X53-D36.3]
+JUNOS py-base-i386 [14.1X53-D36.3]
+JUNOS Host Software [14.1X53-D30.3]
+
+fpc2:
+--------------------------------------------------------------------------
+Hostname: Punter
+Model: qfx5100-96s-8q
+Junos: 14.1X53-D36.3
+JUNOS Base OS Software Suite [14.1X53-D36.3]
+JUNOS Base OS boot [14.1X53-D36.3]
+JUNOS Online Documentation [14.1X53-D36.3]
+JUNOS Crypto Software Suite [14.1X53-D36.3]
+JUNOS Kernel Software Suite [14.1X53-D36.3]
+JUNOS Packet Forwarding Engine Support (qfx-ex-x86-32) [14.1X53-D36.3]
+JUNOS Routing Software Suite [14.1X53-D36.3]
+JUNOS SDN Software Suite [14.1X53-D36.3]
+JUNOS Enterprise Software Suite [14.1X53-D36.3]
+JUNOS Web Management Platform Package [14.1X53-D36.3]
+JUNOS py-base-i386 [14.1X53-D36.3]
+JUNOS Host Software [14.1X53-D36.3]
+
+fpc3:
+--------------------------------------------------------------------------
+Hostname: Punter
+Model: qfx5100-96s-8q
+Junos: 14.1X53-D36.3
+JUNOS Base OS Software Suite [14.1X53-D36.3]
+JUNOS Base OS boot [14.1X53-D36.3]
+JUNOS Online Documentation [14.1X53-D36.3]
+JUNOS Crypto Software Suite [14.1X53-D36.3]
+JUNOS Kernel Software Suite [14.1X53-D36.3]
+JUNOS Packet Forwarding Engine Support (qfx-ex-x86-32) [14.1X53-D36.3]
+JUNOS Routing Software Suite [14.1X53-D36.3]
+JUNOS SDN Software Suite [14.1X53-D36.3]
+JUNOS Enterprise Software Suite [14.1X53-D36.3]
+JUNOS Web Management Platform Package [14.1X53-D36.3]
+JUNOS py-base-i386 [14.1X53-D36.3]
+JUNOS Host Software [14.1X53-D36.3]
+
+Wed 15 Feb 2017 23:27:59 DEBUG pypuller.py 481 14024 write to file /home/pings/pypuller_logs/punter.ultralab.juniper.net
+Wed 15 Feb 2017 23:27:59 INFO pypuller.py 640 14024 <---thread "show version" exited (1.02 sec).
+Wed 15 Feb 2017 23:28:00 DEBUG pypuller.py 481 14024 write to file punter.ultralab.juniper.net
+Wed 15 Feb 2017 23:28:00 INFO pypuller.py 769 14024 <===Process punter.ultralab.juniper.net exited (6.69 sec).
+Wed 15 Feb 2017 23:28:00 INFO pypuller.py 1102 16084 ====Task MainProcess runs 7.27 seconds.
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 883 11712 command line options read:
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 884 11712 debug = 2
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 885 11712 user = None
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 886 11712 password = None
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 887 11712 router_file = None
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 888 11712 cli_file = None
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 889 11712 log_dir = None
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 890 11712 host_list = ['punter.ultralab.juniper.net']
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 891 11712 cli_list = ['show version']
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 892 11712 commit = False
+Wed 15 Feb 2017 23:29:46 VERBOSE pypuller.py 922 11712 host_list read from ./router-lists.txt: ['172.19.161.123', '172.19.164.5', 'matrix-re0.ultralab.juniper.net', 'mango-re0.ultralab.juniper.net', 'bombay-re1.ultralab.juniper.net', 'perth.ultralab.juniper.net', 'core1.ultralab.juniper.net', 'core2.ultralab.juniper.net', 'core3.ultralab.juniper.net', 'batman-re0.ultralab.juniper.net', 'robin-re0.ultralab.juniper.net', 'firefly-re1.ultralab.juniper.net', 'joker.ultralab.juniper.net', 'bane.ultralab.juniper.net', 'bluebird-re0.ultralab.juniper.net', 'hawkfire-re1.ultralab.juniper.net', 'yin-re0.ultralab.juniper.net', 'yang-re0.ultralab.juniper.net', 'kadal-re0.ultralab.juniper.net', 'kappal-re0.ultralab.juniper.net', 'jtac-mx80-r071.ultralab.juniper.net', 'jtac-mx80-r072.ultralab.juniper.net', '172.22.157.62', 'mason-re1.ultralab.juniper.net', 'caesar-re0.ultralab.juniper.net', 'dice-re0.ultralab.juniper.net', 'fairfax-re0.ultralab.juniper.net', 'geras-re0.ultralab.juniper.net', 'radish-re0.ultralab.juniper.net', 'celery.ultralab.juniper.net', 'leek-re0.ultralab.juniper.net', 'turnip.ultralab.juniper.net', 'norfolk-re0.ultralab.juniper.net', 'camaro-re0.ultralab.juniper.net', 'maxima.ultralab.juniper.net', 'mickey-re0.ultralab.juniper.net', 'bethesda-re0.ultralab.juniper.net', 'Kratos-re0.ultralab.juniper.net', 'Antalya-re0.ultralab.juniper.net', 'Rio-re0.ultralab.juniper.net', 'ashburn-re0.ultralab.juniper.net', 'beltway-re0.ultralab.juniper.net', 'Pacifix-re0.ultralab.juniper.net', 'Photogenix-re0.ultralab.juniper.net', 'Dogmatix-re0.ultralab.juniper.net', 'Automatix-re0.ultralab.juniper.net', 'Botanix-re0.ultralab.juniper.net', 'Idefix-re0.ultralab.juniper.net', 'Getafix-re0.ultralab.juniper.net', 'Alcoholix-re0.ultralab.juniper.net', 'styx-re0.ultralab.juniper.net', 'jaguars.ultralab.juniper.net', 'pontos-re0.ultralab.juniper.net', 'obelix-re0.ultralab.juniper.net', 'knicks-re0.ultralab.juniper.net', 'clippers.ultralab.juniper.net', 'texans.ultralab.juniper.net', 'mix.ultralab.juniper.net', 'dynamix.ultralab.juniper.net', 'prefix.ultralab.juniper.net', 'accord.ultralab.juniper.net', 'camry.ultralab.juniper.net', 'georgia.ultralab.juniper.net', 'tintin-re0.ultralab.juniper.net', 'kurt-re0.ultralab.juniper.net', 'wukong-re0.ultralab.juniper.net', 'daedalus-re0.ultralab.juniper.net', 'suns.ultralab.juniper.net', 'aldie-re0.ultralab.juniper.net', 'maya-re1.ultralab.juniper.net', 'rockets-re0.ultralab.juniper.net', 'willi-re0.ultralab.juniper.net', 'flip.ultralab.juniper.net', 'redskins-re0.ultralab.juniper.net', 'chiefs.ultralab.juniper.net', 'raiders.ultralab.juniper.net', 'tianjin-re0.ultralab.juniper.net', 'wickie.ultralab.juniper.net', 'nemesis-re0.ultralab.juniper.net', 'snorre.ultralab.juniper.net', 'punter.ultralab.juniper.net', 'greenbay.ultralab.juniper.net', 'brady.ultralab.juniper.net', 'maning.ultralab.juniper.net', 'asterix-re0.ultralab.juniper.net', 'timex-re0.ultralab.juniper.net', 'nyx-re0.ultralab.juniper.net', 'atlantix-re0.ultralab.juniper.net', 'sphinx.ultralab.juniper.net', 'phoenix.ultralab.juniper.net', 'chargers.ultralab.juniper.net', 'bears.ultralab.juniper.net', 'cacofonix-re0.ultralab.juniper.net', 'matrix-re0.ultralab.juniper.net', 'egypt.ultralab.juniper.net', 'turkey.ultralab.juniper.net', 'greece-re0.ultralab.juniper.net', 'holland-re0.ultralab.juniper.net', 'jtac-JA2500-r005.ultralab.juniper.net', 'jtac-JA2500-r006.ultralab.juniper.net', 'nereus.ultralab.juniper.net', 'colts.ultralab.juniper.net', 'eros.ultralab.juniper.net', 'sonata.jtac-east.jnpr.net', 'donald.jtac-east.jnpr.net', 'ares.jtac-east.jnpr.net', '10.85.4.54', '10.85.4.17', 'steelers.jtac-east.jnpr.net', 'saints.jtac-east.jnpr.net', '10.85.4.32', 'bajie.jtac-east.jnpr.net', 'lakers.jtac-east.jnpr.net', 'sonics.jtac-east.jnpr.net', 'seahwaks.jtac-east.jnpr.net', 'dolphins.jtac-east.jnpr.net', 'hermes.jtac-east.jnpr.net', 'penang.jtac-east.jnpr.net', 'mini.jtac-east.jnpr.net', 'hornets.jtac-east.jnpr.net', 'e07-17-re0.ultralab.juniper.net', 'e07-25-re0.ultralab.juniper.net', 'hypnos-re0.ultralab.juniper.net', 'panthers.ultralab.juniper.net', 'gilby.ultralab.juniper.net', 'mavericks.ultralab.juniper.net', 'alecto-re0.ultralab.juniper.net', 'halvar.ultralab.juniper.net', 'bills.jtac-east.jnpr.net', 'rams.jtac-east.jnpr.net', 'b05-22.ultralab.juniper.net', 'b05-24.ultralab.juniper.net', 'b05-26.ultralab.juniper.net', 'b05-28.ultralab.juniper.net', 'b05-30.ultralab.juniper.net', 'b05-31.ultralab.juniper.net', 'b05-32.ultralab.juniper.net', 'b05-33.ultralab.juniper.net', 'SRX5800-19_35.ultralab.juniper.net', 'SRX5800-18_19.ultralab.juniper.net']
+Wed 15 Feb 2017 23:29:46 VERBOSE pypuller.py 924 11712 cli_list read from ./cli-lists.txt: ['show version', 'show interface lo0 terse', 'show system uptime']
+Wed 15 Feb 2017 23:29:46 VERBOSE pypuller.py 939 11712 the yaml data looks:
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 963 11712 host_list after read from ./pypuller.yaml: ['Router2', 'Router1', '172.19.161.123', '172.19.164.5', 'matrix-re0.ultralab.juniper.net']
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 965 11712 cli_list after read from ./pypuller.yaml: ['show chassis hardware', 'show system core', 'show system uptime']
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 991 11712 final host_list: ['punter.ultralab.juniper.net']
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 992 11712 final cli_list: ['show version']
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 994 11712 after processing command line argument options looks:
+Wed 15 Feb 2017 23:29:46 INFO pypuller.py 1089 11712 ====Parent process MainProcess started, PID(11712)...
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 781 11712 get a host: punter.ultralab.juniper.net
+Wed 15 Feb 2017 23:29:46 INFO pypuller.py 655 15680 ===>Process punter.ultralab.juniper.net started, PID(15680)...
+Wed 15 Feb 2017 23:29:46 INFO pypuller.py 704 15680 connecting to punter.ultralab.juniper.net(punter.ultralab.juniper.net) ...
+Wed 15 Feb 2017 23:29:46 DEBUG pypuller.py 532 15680 attempt (0/2)!
+Wed 15 Feb 2017 23:29:51 INFO pypuller.py 584 15680 punter.ultralab.juniper.net connected!
+Wed 15 Feb 2017 23:29:51 DEBUG pypuller.py 742 15680 log file full path looks:/home/pings/pypuller_logs/punter.ultralab.juniper.net
+Wed 15 Feb 2017 23:29:51 INFO pypuller.py 626 15680 --->thread ""show version"" started, PID(15680)...
+Wed 15 Feb 2017 23:29:52 VERBOSE pypuller.py 635 15680 output of cli 'show version' looks:
+
+fpc0:
+--------------------------------------------------------------------------
+Hostname: Punter
+Model: qfx5100-96s-8q
+Junos: 14.1X53-D36.3
+JUNOS Base OS Software Suite [14.1X53-D36.3]
+JUNOS Base OS boot [14.1X53-D36.3]
+JUNOS Online Documentation [14.1X53-D36.3]
+JUNOS Crypto Software Suite [14.1X53-D36.3]
+JUNOS Kernel Software Suite [14.1X53-D36.3]
+JUNOS Packet Forwarding Engine Support (qfx-ex-x86-32) [14.1X53-D36.3]
+JUNOS Routing Software Suite [14.1X53-D36.3]
+JUNOS SDN Software Suite [14.1X53-D36.3]
+JUNOS Enterprise Software Suite [14.1X53-D36.3]
+JUNOS Web Management Platform Package [14.1X53-D36.3]
+JUNOS py-base-i386 [14.1X53-D36.3]
+JUNOS Host Software [14.1X53-D30.3]
+
+fpc2:
+--------------------------------------------------------------------------
+Hostname: Punter
+Model: qfx5100-96s-8q
+Junos: 14.1X53-D36.3
+JUNOS Base OS Software Suite [14.1X53-D36.3]
+JUNOS Base OS boot [14.1X53-D36.3]
+JUNOS Online Documentation [14.1X53-D36.3]
+JUNOS Crypto Software Suite [14.1X53-D36.3]
+JUNOS Kernel Software Suite [14.1X53-D36.3]
+JUNOS Packet Forwarding Engine Support (qfx-ex-x86-32) [14.1X53-D36.3]
+JUNOS Routing Software Suite [14.1X53-D36.3]
+JUNOS SDN Software Suite [14.1X53-D36.3]
+JUNOS Enterprise Software Suite [14.1X53-D36.3]
+JUNOS Web Management Platform Package [14.1X53-D36.3]
+JUNOS py-base-i386 [14.1X53-D36.3]
+JUNOS Host Software [14.1X53-D36.3]
+
+fpc3:
+--------------------------------------------------------------------------
+Hostname: Punter
+Model: qfx5100-96s-8q
+Junos: 14.1X53-D36.3
+JUNOS Base OS Software Suite [14.1X53-D36.3]
+JUNOS Base OS boot [14.1X53-D36.3]
+JUNOS Online Documentation [14.1X53-D36.3]
+JUNOS Crypto Software Suite [14.1X53-D36.3]
+JUNOS Kernel Software Suite [14.1X53-D36.3]
+JUNOS Packet Forwarding Engine Support (qfx-ex-x86-32) [14.1X53-D36.3]
+JUNOS Routing Software Suite [14.1X53-D36.3]
+JUNOS SDN Software Suite [14.1X53-D36.3]
+JUNOS Enterprise Software Suite [14.1X53-D36.3]
+JUNOS Web Management Platform Package [14.1X53-D36.3]
+JUNOS py-base-i386 [14.1X53-D36.3]
+JUNOS Host Software [14.1X53-D36.3]
+
+Wed 15 Feb 2017 23:29:52 DEBUG pypuller.py 481 15680 write to file /home/pings/pypuller_logs/punter.ultralab.juniper.net
+Wed 15 Feb 2017 23:29:52 INFO pypuller.py 640 15680 <---thread "show version" exited (0.98 sec).
+Wed 15 Feb 2017 23:29:53 DEBUG pypuller.py 481 15680 write to file punter.ultralab.juniper.net
+Wed 15 Feb 2017 23:29:53 INFO pypuller.py 769 15680 <===Process punter.ultralab.juniper.net exited (7.00 sec).
+Wed 15 Feb 2017 23:29:53 INFO pypuller.py 1102 11712 ====Task MainProcess runs 7.13 seconds.
+Wed 15 Feb 2017 23:36:50 DEBUG pypuller.py 880 16316 command line options read:
+Wed 15 Feb 2017 23:36:50 DEBUG pypuller.py 881 16316 debug = 2
+Wed 15 Feb 2017 23:36:50 DEBUG pypuller.py 882 16316 user = None
+Wed 15 Feb 2017 23:36:50 DEBUG pypuller.py 883 16316 password = None
+Wed 15 Feb 2017 23:36:50 DEBUG pypuller.py 884 16316 router_file = None
+Wed 15 Feb 2017 23:36:50 DEBUG pypuller.py 885 16316 cli_file = None
+Wed 15 Feb 2017 23:36:50 DEBUG pypuller.py 886 16316 log_dir = None
+Wed 15 Feb 2017 23:36:50 DEBUG pypuller.py 887 16316 host_list = ['punter.ultralab.juniper.net']
+Wed 15 Feb 2017 23:36:50 DEBUG pypuller.py 888 16316 cli_list = ['show version']
+Wed 15 Feb 2017 23:36:50 DEBUG pypuller.py 889 16316 commit = False
+Wed 15 Feb 2017 23:36:50 VERBOSE pypuller.py 919 16316 host_list read from ./router-lists.txt: ['172.19.161.123', '172.19.164.5', 'matrix-re0.ultralab.juniper.net', 'mango-re0.ultralab.juniper.net', 'bombay-re1.ultralab.juniper.net', 'perth.ultralab.juniper.net', 'core1.ultralab.juniper.net', 'core2.ultralab.juniper.net', 'core3.ultralab.juniper.net', 'batman-re0.ultralab.juniper.net', 'robin-re0.ultralab.juniper.net', 'firefly-re1.ultralab.juniper.net', 'joker.ultralab.juniper.net', 'bane.ultralab.juniper.net', 'bluebird-re0.ultralab.juniper.net', 'hawkfire-re1.ultralab.juniper.net', 'yin-re0.ultralab.juniper.net', 'yang-re0.ultralab.juniper.net', 'kadal-re0.ultralab.juniper.net', 'kappal-re0.ultralab.juniper.net', 'jtac-mx80-r071.ultralab.juniper.net', 'jtac-mx80-r072.ultralab.juniper.net', '172.22.157.62', 'mason-re1.ultralab.juniper.net', 'caesar-re0.ultralab.juniper.net', 'dice-re0.ultralab.juniper.net', 'fairfax-re0.ultralab.juniper.net', 'geras-re0.ultralab.juniper.net', 'radish-re0.ultralab.juniper.net', 'celery.ultralab.juniper.net', 'leek-re0.ultralab.juniper.net', 'turnip.ultralab.juniper.net', 'norfolk-re0.ultralab.juniper.net', 'camaro-re0.ultralab.juniper.net', 'maxima.ultralab.juniper.net', 'mickey-re0.ultralab.juniper.net', 'bethesda-re0.ultralab.juniper.net', 'Kratos-re0.ultralab.juniper.net', 'Antalya-re0.ultralab.juniper.net', 'Rio-re0.ultralab.juniper.net', 'ashburn-re0.ultralab.juniper.net', 'beltway-re0.ultralab.juniper.net', 'Pacifix-re0.ultralab.juniper.net', 'Photogenix-re0.ultralab.juniper.net', 'Dogmatix-re0.ultralab.juniper.net', 'Automatix-re0.ultralab.juniper.net', 'Botanix-re0.ultralab.juniper.net', 'Idefix-re0.ultralab.juniper.net', 'Getafix-re0.ultralab.juniper.net', 'Alcoholix-re0.ultralab.juniper.net', 'styx-re0.ultralab.juniper.net', 'jaguars.ultralab.juniper.net', 'pontos-re0.ultralab.juniper.net', 'obelix-re0.ultralab.juniper.net', 'knicks-re0.ultralab.juniper.net', 'clippers.ultralab.juniper.net', 'texans.ultralab.juniper.net', 'mix.ultralab.juniper.net', 'dynamix.ultralab.juniper.net', 'prefix.ultralab.juniper.net', 'accord.ultralab.juniper.net', 'camry.ultralab.juniper.net', 'georgia.ultralab.juniper.net', 'tintin-re0.ultralab.juniper.net', 'kurt-re0.ultralab.juniper.net', 'wukong-re0.ultralab.juniper.net', 'daedalus-re0.ultralab.juniper.net', 'suns.ultralab.juniper.net', 'aldie-re0.ultralab.juniper.net', 'maya-re1.ultralab.juniper.net', 'rockets-re0.ultralab.juniper.net', 'willi-re0.ultralab.juniper.net', 'flip.ultralab.juniper.net', 'redskins-re0.ultralab.juniper.net', 'chiefs.ultralab.juniper.net', 'raiders.ultralab.juniper.net', 'tianjin-re0.ultralab.juniper.net', 'wickie.ultralab.juniper.net', 'nemesis-re0.ultralab.juniper.net', 'snorre.ultralab.juniper.net', 'punter.ultralab.juniper.net', 'greenbay.ultralab.juniper.net', 'brady.ultralab.juniper.net', 'maning.ultralab.juniper.net', 'asterix-re0.ultralab.juniper.net', 'timex-re0.ultralab.juniper.net', 'nyx-re0.ultralab.juniper.net', 'atlantix-re0.ultralab.juniper.net', 'sphinx.ultralab.juniper.net', 'phoenix.ultralab.juniper.net', 'chargers.ultralab.juniper.net', 'bears.ultralab.juniper.net', 'cacofonix-re0.ultralab.juniper.net', 'matrix-re0.ultralab.juniper.net', 'egypt.ultralab.juniper.net', 'turkey.ultralab.juniper.net', 'greece-re0.ultralab.juniper.net', 'holland-re0.ultralab.juniper.net', 'jtac-JA2500-r005.ultralab.juniper.net', 'jtac-JA2500-r006.ultralab.juniper.net', 'nereus.ultralab.juniper.net', 'colts.ultralab.juniper.net', 'eros.ultralab.juniper.net', 'sonata.jtac-east.jnpr.net', 'donald.jtac-east.jnpr.net', 'ares.jtac-east.jnpr.net', '10.85.4.54', '10.85.4.17', 'steelers.jtac-east.jnpr.net', 'saints.jtac-east.jnpr.net', '10.85.4.32', 'bajie.jtac-east.jnpr.net', 'lakers.jtac-east.jnpr.net', 'sonics.jtac-east.jnpr.net', 'seahwaks.jtac-east.jnpr.net', 'dolphins.jtac-east.jnpr.net', 'hermes.jtac-east.jnpr.net', 'penang.jtac-east.jnpr.net', 'mini.jtac-east.jnpr.net', 'hornets.jtac-east.jnpr.net', 'e07-17-re0.ultralab.juniper.net', 'e07-25-re0.ultralab.juniper.net', 'hypnos-re0.ultralab.juniper.net', 'panthers.ultralab.juniper.net', 'gilby.ultralab.juniper.net', 'mavericks.ultralab.juniper.net', 'alecto-re0.ultralab.juniper.net', 'halvar.ultralab.juniper.net', 'bills.jtac-east.jnpr.net', 'rams.jtac-east.jnpr.net', 'b05-22.ultralab.juniper.net', 'b05-24.ultralab.juniper.net', 'b05-26.ultralab.juniper.net', 'b05-28.ultralab.juniper.net', 'b05-30.ultralab.juniper.net', 'b05-31.ultralab.juniper.net', 'b05-32.ultralab.juniper.net', 'b05-33.ultralab.juniper.net', 'SRX5800-19_35.ultralab.juniper.net', 'SRX5800-18_19.ultralab.juniper.net']
+Wed 15 Feb 2017 23:36:50 VERBOSE pypuller.py 921 16316 cli_list read from ./cli-lists.txt: ['show version', 'show interface lo0 terse', 'show system uptime']
+Wed 15 Feb 2017 23:36:50 VERBOSE pypuller.py 936 16316 the yaml data looks:
+Wed 15 Feb 2017 23:36:50 DEBUG pypuller.py 960 16316 host_list after read from ./pypuller.yaml: ['Router2', 'Router1', '172.19.161.123', '172.19.164.5', 'matrix-re0.ultralab.juniper.net']
+Wed 15 Feb 2017 23:36:50 DEBUG pypuller.py 962 16316 cli_list after read from ./pypuller.yaml: ['show chassis hardware', 'show system core', 'show system uptime']
+Wed 15 Feb 2017 23:36:50 DEBUG pypuller.py 988 16316 final host_list: ['punter.ultralab.juniper.net']
+Wed 15 Feb 2017 23:36:50 DEBUG pypuller.py 989 16316 final cli_list: ['show version']
+Wed 15 Feb 2017 23:36:50 DEBUG pypuller.py 991 16316 after processing command line argument options looks:
+Wed 15 Feb 2017 23:36:50 INFO pypuller.py 1086 16316 ====Parent process MainProcess started, PID(16316)...
+Wed 15 Feb 2017 23:36:50 DEBUG pypuller.py 778 16316 get a host: punter.ultralab.juniper.net
+Wed 15 Feb 2017 23:36:51 INFO pypuller.py 655 15280 ===>Process punter.ultralab.juniper.net started, PID(15280)...
+Wed 15 Feb 2017 23:36:51 INFO pypuller.py 704 15280 connecting to punter.ultralab.juniper.net(punter.ultralab.juniper.net) ...
+Wed 15 Feb 2017 23:36:51 DEBUG pypuller.py 532 15280 attempt (0/2)!
+Wed 15 Feb 2017 23:36:56 INFO pypuller.py 584 15280 punter.ultralab.juniper.net connected!
+Wed 15 Feb 2017 23:36:56 VERBOSE pypuller.py 742 15280 log file full path looks:/home/pings/pypuller_logs/punter.ultralab.juniper.net
+Wed 15 Feb 2017 23:36:56 INFO pypuller.py 626 15280 --->thread ""show version"" started, PID(15280)...
+Wed 15 Feb 2017 23:36:57 VERBOSE pypuller.py 635 15280 output of cli 'show version' looks:
+
+fpc0:
+--------------------------------------------------------------------------
+Hostname: Punter
+Model: qfx5100-96s-8q
+Junos: 14.1X53-D36.3
+JUNOS Base OS Software Suite [14.1X53-D36.3]
+JUNOS Base OS boot [14.1X53-D36.3]
+JUNOS Online Documentation [14.1X53-D36.3]
+JUNOS Crypto Software Suite [14.1X53-D36.3]
+JUNOS Kernel Software Suite [14.1X53-D36.3]
+JUNOS Packet Forwarding Engine Support (qfx-ex-x86-32) [14.1X53-D36.3]
+JUNOS Routing Software Suite [14.1X53-D36.3]
+JUNOS SDN Software Suite [14.1X53-D36.3]
+JUNOS Enterprise Software Suite [14.1X53-D36.3]
+JUNOS Web Management Platform Package [14.1X53-D36.3]
+JUNOS py-base-i386 [14.1X53-D36.3]
+JUNOS Host Software [14.1X53-D30.3]
+
+fpc2:
+--------------------------------------------------------------------------
+Hostname: Punter
+Model: qfx5100-96s-8q
+Junos: 14.1X53-D36.3
+JUNOS Base OS Software Suite [14.1X53-D36.3]
+JUNOS Base OS boot [14.1X53-D36.3]
+JUNOS Online Documentation [14.1X53-D36.3]
+JUNOS Crypto Software Suite [14.1X53-D36.3]
+JUNOS Kernel Software Suite [14.1X53-D36.3]
+JUNOS Packet Forwarding Engine Support (qfx-ex-x86-32) [14.1X53-D36.3]
+JUNOS Routing Software Suite [14.1X53-D36.3]
+JUNOS SDN Software Suite [14.1X53-D36.3]
+JUNOS Enterprise Software Suite [14.1X53-D36.3]
+JUNOS Web Management Platform Package [14.1X53-D36.3]
+JUNOS py-base-i386 [14.1X53-D36.3]
+JUNOS Host Software [14.1X53-D36.3]
+
+fpc3:
+--------------------------------------------------------------------------
+Hostname: Punter
+Model: qfx5100-96s-8q
+Junos: 14.1X53-D36.3
+JUNOS Base OS Software Suite [14.1X53-D36.3]
+JUNOS Base OS boot [14.1X53-D36.3]
+JUNOS Online Documentation [14.1X53-D36.3]
+JUNOS Crypto Software Suite [14.1X53-D36.3]
+JUNOS Kernel Software Suite [14.1X53-D36.3]
+JUNOS Packet Forwarding Engine Support (qfx-ex-x86-32) [14.1X53-D36.3]
+JUNOS Routing Software Suite [14.1X53-D36.3]
+JUNOS SDN Software Suite [14.1X53-D36.3]
+JUNOS Enterprise Software Suite [14.1X53-D36.3]
+JUNOS Web Management Platform Package [14.1X53-D36.3]
+JUNOS py-base-i386 [14.1X53-D36.3]
+JUNOS Host Software [14.1X53-D36.3]
+
+Wed 15 Feb 2017 23:36:57 DEBUG pypuller.py 481 15280 write to file /home/pings/pypuller_logs/punter.ultralab.juniper.net
+Wed 15 Feb 2017 23:36:57 INFO pypuller.py 640 15280 <---thread "show version" exited (1.02 sec).
+Wed 15 Feb 2017 23:36:57 INFO pypuller.py 766 15280 <===Process punter.ultralab.juniper.net exited (6.16 sec).
+Wed 15 Feb 2017 23:36:57 INFO pypuller.py 1099 16316 ====Task MainProcess runs 6.76 seconds.
+Thu 16 Feb 2017 00:16:05 INFO pypuller.py 1086 12556 ====Parent process MainProcess started, PID(12556)...
+Thu 16 Feb 2017 00:16:06 INFO pypuller.py 655 14984 ===>Process punter.ultralab.juniper.net started, PID(14984)...
+Thu 16 Feb 2017 00:16:06 INFO pypuller.py 704 14984 connecting to punter.ultralab.juniper.net(punter.ultralab.juniper.net) ...
+Thu 16 Feb 2017 00:16:06 INFO pypuller.py 655 14672 ===>Process seahawks-re0.ultralab.juniper.net started, PID(14672)...
+Thu 16 Feb 2017 00:16:06 INFO pypuller.py 704 14672 connecting to seahawks-re0.ultralab.juniper.net(seahawks-re0.ultralab.juniper.net) ...
+Thu 16 Feb 2017 00:16:11 INFO pypuller.py 584 14984 punter.ultralab.juniper.net connected!
+Thu 16 Feb 2017 00:16:11 INFO pypuller.py 626 14984 --->thread ""show version"" started, PID(14984)...
+Thu 16 Feb 2017 00:16:11 INFO pypuller.py 626 14984 --->thread ""show system uptime"" started, PID(14984)...
+Thu 16 Feb 2017 00:16:12 INFO pypuller.py 640 14984 <---thread "show version" exited (1.02 sec).
+Thu 16 Feb 2017 00:16:13 INFO pypuller.py 640 14984 <---thread "show system uptime" exited (1.82 sec).
+Thu 16 Feb 2017 00:16:13 INFO pypuller.py 766 14984 <===Process punter.ultralab.juniper.net exited (7.09 sec).
+Thu 16 Feb 2017 00:17:09 INFO pypuller.py 728 14672 seahawks-re0.ultralab.juniper.net login failed
+Thu 16 Feb 2017 00:17:09 INFO pypuller.py 1099 12556 ====Task MainProcess runs 63.19 seconds.
+Thu 16 Feb 2017 11:36:34 DEBUG pypuller.py 885 13260 command line options read:
+Thu 16 Feb 2017 11:36:34 DEBUG pypuller.py 886 13260 debug = 2
+Thu 16 Feb 2017 11:36:34 DEBUG pypuller.py 887 13260 user = None
+Thu 16 Feb 2017 11:36:34 DEBUG pypuller.py 888 13260 password = None
+Thu 16 Feb 2017 11:36:34 DEBUG pypuller.py 889 13260 router_file = None
+Thu 16 Feb 2017 11:36:34 DEBUG pypuller.py 890 13260 cli_file = None
+Thu 16 Feb 2017 11:36:34 DEBUG pypuller.py 891 13260 log_dir = None
+Thu 16 Feb 2017 11:36:34 DEBUG pypuller.py 892 13260 host_list = ['punter.ultralab.juniper.net']
+Thu 16 Feb 2017 11:36:34 DEBUG pypuller.py 893 13260 cli_list = ['show version']
+Thu 16 Feb 2017 11:36:34 DEBUG pypuller.py 894 13260 commit = False
+Thu 16 Feb 2017 11:36:34 VERBOSE pypuller.py 924 13260 host_list read from ./router-lists.txt: ['172.19.161.123', '172.19.164.5', 'matrix-re0.ultralab.juniper.net', 'mango-re0.ultralab.juniper.net', 'bombay-re1.ultralab.juniper.net', 'perth.ultralab.juniper.net', 'core1.ultralab.juniper.net', 'core2.ultralab.juniper.net', 'core3.ultralab.juniper.net', 'batman-re0.ultralab.juniper.net', 'robin-re0.ultralab.juniper.net', 'firefly-re1.ultralab.juniper.net', 'joker.ultralab.juniper.net', 'bane.ultralab.juniper.net', 'bluebird-re0.ultralab.juniper.net', 'hawkfire-re1.ultralab.juniper.net', 'yin-re0.ultralab.juniper.net', 'yang-re0.ultralab.juniper.net', 'kadal-re0.ultralab.juniper.net', 'kappal-re0.ultralab.juniper.net', 'jtac-mx80-r071.ultralab.juniper.net', 'jtac-mx80-r072.ultralab.juniper.net', '172.22.157.62', 'mason-re1.ultralab.juniper.net', 'caesar-re0.ultralab.juniper.net', 'dice-re0.ultralab.juniper.net', 'fairfax-re0.ultralab.juniper.net', 'geras-re0.ultralab.juniper.net', 'radish-re0.ultralab.juniper.net', 'celery.ultralab.juniper.net', 'leek-re0.ultralab.juniper.net', 'turnip.ultralab.juniper.net', 'norfolk-re0.ultralab.juniper.net', 'camaro-re0.ultralab.juniper.net', 'maxima.ultralab.juniper.net', 'mickey-re0.ultralab.juniper.net', 'bethesda-re0.ultralab.juniper.net', 'Kratos-re0.ultralab.juniper.net', 'Antalya-re0.ultralab.juniper.net', 'Rio-re0.ultralab.juniper.net', 'ashburn-re0.ultralab.juniper.net', 'beltway-re0.ultralab.juniper.net', 'Pacifix-re0.ultralab.juniper.net', 'Photogenix-re0.ultralab.juniper.net', 'Dogmatix-re0.ultralab.juniper.net', 'Automatix-re0.ultralab.juniper.net', 'Botanix-re0.ultralab.juniper.net', 'Idefix-re0.ultralab.juniper.net', 'Getafix-re0.ultralab.juniper.net', 'Alcoholix-re0.ultralab.juniper.net', 'styx-re0.ultralab.juniper.net', 'jaguars.ultralab.juniper.net', 'pontos-re0.ultralab.juniper.net', 'obelix-re0.ultralab.juniper.net', 'knicks-re0.ultralab.juniper.net', 'clippers.ultralab.juniper.net', 'texans.ultralab.juniper.net', 'mix.ultralab.juniper.net', 'dynamix.ultralab.juniper.net', 'prefix.ultralab.juniper.net', 'accord.ultralab.juniper.net', 'camry.ultralab.juniper.net', 'georgia.ultralab.juniper.net', 'tintin-re0.ultralab.juniper.net', 'kurt-re0.ultralab.juniper.net', 'wukong-re0.ultralab.juniper.net', 'daedalus-re0.ultralab.juniper.net', 'suns.ultralab.juniper.net', 'aldie-re0.ultralab.juniper.net', 'maya-re1.ultralab.juniper.net', 'rockets-re0.ultralab.juniper.net', 'willi-re0.ultralab.juniper.net', 'flip.ultralab.juniper.net', 'redskins-re0.ultralab.juniper.net', 'chiefs.ultralab.juniper.net', 'raiders.ultralab.juniper.net', 'tianjin-re0.ultralab.juniper.net', 'wickie.ultralab.juniper.net', 'nemesis-re0.ultralab.juniper.net', 'snorre.ultralab.juniper.net', 'punter.ultralab.juniper.net', 'greenbay.ultralab.juniper.net', 'brady.ultralab.juniper.net', 'maning.ultralab.juniper.net', 'asterix-re0.ultralab.juniper.net', 'timex-re0.ultralab.juniper.net', 'nyx-re0.ultralab.juniper.net', 'atlantix-re0.ultralab.juniper.net', 'sphinx.ultralab.juniper.net', 'phoenix.ultralab.juniper.net', 'chargers.ultralab.juniper.net', 'bears.ultralab.juniper.net', 'cacofonix-re0.ultralab.juniper.net', 'matrix-re0.ultralab.juniper.net', 'egypt.ultralab.juniper.net', 'turkey.ultralab.juniper.net', 'greece-re0.ultralab.juniper.net', 'holland-re0.ultralab.juniper.net', 'jtac-JA2500-r005.ultralab.juniper.net', 'jtac-JA2500-r006.ultralab.juniper.net', 'nereus.ultralab.juniper.net', 'colts.ultralab.juniper.net', 'eros.ultralab.juniper.net', 'sonata.jtac-east.jnpr.net', 'donald.jtac-east.jnpr.net', 'ares.jtac-east.jnpr.net', '10.85.4.54', '10.85.4.17', 'steelers.jtac-east.jnpr.net', 'saints.jtac-east.jnpr.net', '10.85.4.32', 'bajie.jtac-east.jnpr.net', 'lakers.jtac-east.jnpr.net', 'sonics.jtac-east.jnpr.net', 'seahwaks.jtac-east.jnpr.net', 'dolphins.jtac-east.jnpr.net', 'hermes.jtac-east.jnpr.net', 'penang.jtac-east.jnpr.net', 'mini.jtac-east.jnpr.net', 'hornets.jtac-east.jnpr.net', 'e07-17-re0.ultralab.juniper.net', 'e07-25-re0.ultralab.juniper.net', 'hypnos-re0.ultralab.juniper.net', 'panthers.ultralab.juniper.net', 'gilby.ultralab.juniper.net', 'mavericks.ultralab.juniper.net', 'alecto-re0.ultralab.juniper.net', 'halvar.ultralab.juniper.net', 'bills.jtac-east.jnpr.net', 'rams.jtac-east.jnpr.net', 'b05-22.ultralab.juniper.net', 'b05-24.ultralab.juniper.net', 'b05-26.ultralab.juniper.net', 'b05-28.ultralab.juniper.net', 'b05-30.ultralab.juniper.net', 'b05-31.ultralab.juniper.net', 'b05-32.ultralab.juniper.net', 'b05-33.ultralab.juniper.net', 'SRX5800-19_35.ultralab.juniper.net', 'SRX5800-18_19.ultralab.juniper.net']
+Thu 16 Feb 2017 11:36:34 VERBOSE pypuller.py 926 13260 cli_list read from ./cli-lists.txt: ['show version', 'show interface lo0 terse', 'show system uptime']
+Thu 16 Feb 2017 11:36:34 VERBOSE pypuller.py 941 13260 the yaml data looks:
+Thu 16 Feb 2017 11:36:34 DEBUG pypuller.py 965 13260 host_list after read from ./pypuller.yaml: ['Router2', 'Router1', '172.19.161.123', '172.19.164.5', 'matrix-re0.ultralab.juniper.net']
+Thu 16 Feb 2017 11:36:34 DEBUG pypuller.py 967 13260 cli_list after read from ./pypuller.yaml: ['show chassis hardware', 'show system core', 'show system uptime']
+Thu 16 Feb 2017 11:36:34 DEBUG pypuller.py 993 13260 final host_list: ['punter.ultralab.juniper.net']
+Thu 16 Feb 2017 11:36:34 DEBUG pypuller.py 994 13260 final cli_list: ['show version']
+Thu 16 Feb 2017 11:36:34 DEBUG pypuller.py 996 13260 after processing command line argument options looks:
+Thu 16 Feb 2017 11:36:34 INFO pypuller.py 1091 13260 ====Parent process MainProcess started, PID(13260)...
+Thu 16 Feb 2017 11:36:34 DEBUG pypuller.py 783 13260 get a host: punter.ultralab.juniper.net
+Thu 16 Feb 2017 11:36:35 INFO pypuller.py 660 12724 ===>Process punter.ultralab.juniper.net started, PID(12724)...
+Thu 16 Feb 2017 11:36:35 INFO pypuller.py 709 12724 connecting to punter.ultralab.juniper.net(punter.ultralab.juniper.net) ...
+Thu 16 Feb 2017 11:36:35 DEBUG pypuller.py 532 12724 attempt (0/2)!
+Thu 16 Feb 2017 11:36:41 INFO pypuller.py 584 12724 punter.ultralab.juniper.net connected!
+Thu 16 Feb 2017 11:36:41 VERBOSE pypuller.py 747 12724 log file full path looks:/home/pings/pypuller_logs/punter.ultralab.juniper.net
+Thu 16 Feb 2017 11:36:41 INFO pypuller.py 631 12724 --->thread ""show version"" started, PID(12724)...
+Thu 16 Feb 2017 11:36:42 VERBOSE pypuller.py 640 12724 output of cli 'show version' looks:
+
+fpc0:
+--------------------------------------------------------------------------
+Hostname: Punter
+Model: qfx5100-96s-8q
+Junos: 14.1X53-D36.3
+JUNOS Base OS Software Suite [14.1X53-D36.3]
+JUNOS Base OS boot [14.1X53-D36.3]
+JUNOS Online Documentation [14.1X53-D36.3]
+JUNOS Crypto Software Suite [14.1X53-D36.3]
+JUNOS Kernel Software Suite [14.1X53-D36.3]
+JUNOS Packet Forwarding Engine Support (qfx-ex-x86-32) [14.1X53-D36.3]
+JUNOS Routing Software Suite [14.1X53-D36.3]
+JUNOS SDN Software Suite [14.1X53-D36.3]
+JUNOS Enterprise Software Suite [14.1X53-D36.3]
+JUNOS Web Management Platform Package [14.1X53-D36.3]
+JUNOS py-base-i386 [14.1X53-D36.3]
+JUNOS Host Software [14.1X53-D30.3]
+
+fpc2:
+--------------------------------------------------------------------------
+Hostname: Punter
+Model: qfx5100-96s-8q
+Junos: 14.1X53-D36.3
+JUNOS Base OS Software Suite [14.1X53-D36.3]
+JUNOS Base OS boot [14.1X53-D36.3]
+JUNOS Online Documentation [14.1X53-D36.3]
+JUNOS Crypto Software Suite [14.1X53-D36.3]
+JUNOS Kernel Software Suite [14.1X53-D36.3]
+JUNOS Packet Forwarding Engine Support (qfx-ex-x86-32) [14.1X53-D36.3]
+JUNOS Routing Software Suite [14.1X53-D36.3]
+JUNOS SDN Software Suite [14.1X53-D36.3]
+JUNOS Enterprise Software Suite [14.1X53-D36.3]
+JUNOS Web Management Platform Package [14.1X53-D36.3]
+JUNOS py-base-i386 [14.1X53-D36.3]
+JUNOS Host Software [14.1X53-D36.3]
+
+fpc3:
+--------------------------------------------------------------------------
+Hostname: Punter
+Model: qfx5100-96s-8q
+Junos: 14.1X53-D36.3
+JUNOS Base OS Software Suite [14.1X53-D36.3]
+JUNOS Base OS boot [14.1X53-D36.3]
+JUNOS Online Documentation [14.1X53-D36.3]
+JUNOS Crypto Software Suite [14.1X53-D36.3]
+JUNOS Kernel Software Suite [14.1X53-D36.3]
+JUNOS Packet Forwarding Engine Support (qfx-ex-x86-32) [14.1X53-D36.3]
+JUNOS Routing Software Suite [14.1X53-D36.3]
+JUNOS SDN Software Suite [14.1X53-D36.3]
+JUNOS Enterprise Software Suite [14.1X53-D36.3]
+JUNOS Web Management Platform Package [14.1X53-D36.3]
+JUNOS py-base-i386 [14.1X53-D36.3]
+JUNOS Host Software [14.1X53-D36.3]
+
+Thu 16 Feb 2017 11:36:42 DEBUG pypuller.py 481 12724 write to file /home/pings/pypuller_logs/punter.ultralab.juniper.net
+Thu 16 Feb 2017 11:36:42 INFO pypuller.py 645 12724 <---thread "show version" exited (1.04 sec).
+Thu 16 Feb 2017 11:36:42 INFO pypuller.py 771 12724 <===Process punter.ultralab.juniper.net exited (6.44 sec).
+Thu 16 Feb 2017 11:36:42 INFO pypuller.py 1104 13260 ====Task MainProcess runs 7.38 seconds.
+Thu 16 Feb 2017 11:37:01 INFO pypuller.py 1091 16972 ====Parent process MainProcess started, PID(16972)...
+Thu 16 Feb 2017 11:37:01 INFO pypuller.py 660 16860 ===>Process punter.ultralab.juniper.net started, PID(16860)...
+Thu 16 Feb 2017 11:37:01 INFO pypuller.py 709 16860 connecting to punter.ultralab.juniper.net(punter.ultralab.juniper.net) ...
+Thu 16 Feb 2017 11:37:01 INFO pypuller.py 660 15200 ===>Process seahawks-re0.ultralab.juniper.net started, PID(15200)...
+Thu 16 Feb 2017 11:37:01 INFO pypuller.py 709 15200 connecting to seahawks-re0.ultralab.juniper.net(seahawks-re0.ultralab.juniper.net) ...
+Thu 16 Feb 2017 11:37:05 INFO pypuller.py 584 16860 punter.ultralab.juniper.net connected!
+Thu 16 Feb 2017 11:37:05 INFO pypuller.py 631 16860 --->thread ""show version"" started, PID(16860)...
+Thu 16 Feb 2017 11:37:05 INFO pypuller.py 631 16860 --->thread ""show system uptime"" started, PID(16860)...
+Thu 16 Feb 2017 11:37:06 INFO pypuller.py 645 16860 <---thread "show version" exited (1.03 sec).
+Thu 16 Feb 2017 11:37:07 INFO pypuller.py 645 16860 <---thread "show system uptime" exited (1.83 sec).
+Thu 16 Feb 2017 11:37:07 INFO pypuller.py 771 16860 <===Process punter.ultralab.juniper.net exited (6.41 sec).
+Thu 16 Feb 2017 11:37:23 WARNING pypuller.py 589 15200 seahawks-re0.ultralab.juniper.net:ConnectTimeOutError, will reconnect afer 10s...
+Thu 16 Feb 2017 11:37:54 WARNING pypuller.py 589 15200 seahawks-re0.ultralab.juniper.net:ConnectTimeOutError, will reconnect afer 10s...
+Thu 16 Feb 2017 11:38:04 INFO pypuller.py 733 15200 seahawks-re0.ultralab.juniper.net login failed
+Thu 16 Feb 2017 11:38:04 INFO pypuller.py 1104 16972 ====Task MainProcess runs 63.37 seconds.
+Thu 16 Feb 2017 11:40:00 INFO pypuller.py 1093 17204 ====Parent process MainProcess started, PID(17204)...
+Thu 16 Feb 2017 11:40:01 INFO util.py 78 18232 child process calling self.run()
+Thu 16 Feb 2017 11:40:01 INFO pypuller.py 662 18232 ===>Process punter.ultralab.juniper.net started, PID(18232)...
+Thu 16 Feb 2017 11:40:01 INFO pypuller.py 711 18232 connecting to punter.ultralab.juniper.net(punter.ultralab.juniper.net) ...
+Thu 16 Feb 2017 11:40:01 INFO util.py 78 14092 child process calling self.run()
+Thu 16 Feb 2017 11:40:01 INFO pypuller.py 662 14092 ===>Process seahawks-re0.ultralab.juniper.net started, PID(14092)...
+Thu 16 Feb 2017 11:40:01 INFO pypuller.py 711 14092 connecting to seahawks-re0.ultralab.juniper.net(seahawks-re0.ultralab.juniper.net) ...
+Thu 16 Feb 2017 11:40:06 INFO pypuller.py 586 18232 punter.ultralab.juniper.net connected!
+Thu 16 Feb 2017 11:40:06 INFO pypuller.py 633 18232 --->thread ""show version"" started, PID(18232)...
+Thu 16 Feb 2017 11:40:06 INFO pypuller.py 633 18232 --->thread ""show system uptime"" started, PID(18232)...
+Thu 16 Feb 2017 11:40:07 INFO pypuller.py 647 18232 <---thread "show version" exited (1.00 sec).
+Thu 16 Feb 2017 11:40:08 INFO pypuller.py 647 18232 <---thread "show system uptime" exited (1.85 sec).
+Thu 16 Feb 2017 11:40:08 INFO pypuller.py 773 18232 <===Process punter.ultralab.juniper.net exited (6.83 sec).
+Thu 16 Feb 2017 11:40:08 INFO util.py 78 18232 process shutting down
+Thu 16 Feb 2017 11:40:08 INFO util.py 78 18232 process exiting with exitcode 0
+Thu 16 Feb 2017 11:40:22 WARNING pypuller.py 591 14092 seahawks-re0.ultralab.juniper.net:ConnectTimeOutError, will reconnect afer 10s...
+Thu 16 Feb 2017 11:40:53 WARNING pypuller.py 591 14092 seahawks-re0.ultralab.juniper.net:ConnectTimeOutError, will reconnect afer 10s...
+Thu 16 Feb 2017 11:41:03 INFO pypuller.py 735 14092 seahawks-re0.ultralab.juniper.net login failed
+Thu 16 Feb 2017 11:41:03 INFO util.py 78 14092 process shutting down
+Thu 16 Feb 2017 11:41:03 INFO util.py 78 14092 process exiting with exitcode 0
+Thu 16 Feb 2017 11:41:03 INFO pypuller.py 1106 17204 ====Task MainProcess runs 62.59 seconds.
+Thu 16 Feb 2017 11:41:03 INFO util.py 78 17204 process shutting down
+Thu 16 Feb 2017 12:15:44 DEBUG pypuller.py 905 16852 command line options read:
+Thu 16 Feb 2017 12:15:44 DEBUG pypuller.py 906 16852 debug = 2
+Thu 16 Feb 2017 12:15:44 DEBUG pypuller.py 907 16852 user = None
+Thu 16 Feb 2017 12:15:44 DEBUG pypuller.py 908 16852 password = None
+Thu 16 Feb 2017 12:15:44 DEBUG pypuller.py 909 16852 router_file = None
+Thu 16 Feb 2017 12:15:44 DEBUG pypuller.py 910 16852 cli_file = None
+Thu 16 Feb 2017 12:15:44 DEBUG pypuller.py 911 16852 log_dir = None
+Thu 16 Feb 2017 12:15:44 DEBUG pypuller.py 912 16852 host_list = ['punter.ultralab.juniper.net']
+Thu 16 Feb 2017 12:15:44 DEBUG pypuller.py 913 16852 cli_list = ['show version']
+Thu 16 Feb 2017 12:15:44 DEBUG pypuller.py 914 16852 commit = False
+Thu 16 Feb 2017 12:15:44 VERBOSE pypuller.py 944 16852 host_list read from ./router-lists.txt: ['172.19.161.123', '172.19.164.5', 'matrix-re0.ultralab.juniper.net', 'mango-re0.ultralab.juniper.net', 'bombay-re1.ultralab.juniper.net', 'perth.ultralab.juniper.net', 'core1.ultralab.juniper.net', 'core2.ultralab.juniper.net', 'core3.ultralab.juniper.net', 'batman-re0.ultralab.juniper.net', 'robin-re0.ultralab.juniper.net', 'firefly-re1.ultralab.juniper.net', 'joker.ultralab.juniper.net', 'bane.ultralab.juniper.net', 'bluebird-re0.ultralab.juniper.net', 'hawkfire-re1.ultralab.juniper.net', 'yin-re0.ultralab.juniper.net', 'yang-re0.ultralab.juniper.net', 'kadal-re0.ultralab.juniper.net', 'kappal-re0.ultralab.juniper.net', 'jtac-mx80-r071.ultralab.juniper.net', 'jtac-mx80-r072.ultralab.juniper.net', '172.22.157.62', 'mason-re1.ultralab.juniper.net', 'caesar-re0.ultralab.juniper.net', 'dice-re0.ultralab.juniper.net', 'fairfax-re0.ultralab.juniper.net', 'geras-re0.ultralab.juniper.net', 'radish-re0.ultralab.juniper.net', 'celery.ultralab.juniper.net', 'leek-re0.ultralab.juniper.net', 'turnip.ultralab.juniper.net', 'norfolk-re0.ultralab.juniper.net', 'camaro-re0.ultralab.juniper.net', 'maxima.ultralab.juniper.net', 'mickey-re0.ultralab.juniper.net', 'bethesda-re0.ultralab.juniper.net', 'Kratos-re0.ultralab.juniper.net', 'Antalya-re0.ultralab.juniper.net', 'Rio-re0.ultralab.juniper.net', 'ashburn-re0.ultralab.juniper.net', 'beltway-re0.ultralab.juniper.net', 'Pacifix-re0.ultralab.juniper.net', 'Photogenix-re0.ultralab.juniper.net', 'Dogmatix-re0.ultralab.juniper.net', 'Automatix-re0.ultralab.juniper.net', 'Botanix-re0.ultralab.juniper.net', 'Idefix-re0.ultralab.juniper.net', 'Getafix-re0.ultralab.juniper.net', 'Alcoholix-re0.ultralab.juniper.net', 'styx-re0.ultralab.juniper.net', 'jaguars.ultralab.juniper.net', 'pontos-re0.ultralab.juniper.net', 'obelix-re0.ultralab.juniper.net', 'knicks-re0.ultralab.juniper.net', 'clippers.ultralab.juniper.net', 'texans.ultralab.juniper.net', 'mix.ultralab.juniper.net', 'dynamix.ultralab.juniper.net', 'prefix.ultralab.juniper.net', 'accord.ultralab.juniper.net', 'camry.ultralab.juniper.net', 'georgia.ultralab.juniper.net', 'tintin-re0.ultralab.juniper.net', 'kurt-re0.ultralab.juniper.net', 'wukong-re0.ultralab.juniper.net', 'daedalus-re0.ultralab.juniper.net', 'suns.ultralab.juniper.net', 'aldie-re0.ultralab.juniper.net', 'maya-re1.ultralab.juniper.net', 'rockets-re0.ultralab.juniper.net', 'willi-re0.ultralab.juniper.net', 'flip.ultralab.juniper.net', 'redskins-re0.ultralab.juniper.net', 'chiefs.ultralab.juniper.net', 'raiders.ultralab.juniper.net', 'tianjin-re0.ultralab.juniper.net', 'wickie.ultralab.juniper.net', 'nemesis-re0.ultralab.juniper.net', 'snorre.ultralab.juniper.net', 'punter.ultralab.juniper.net', 'greenbay.ultralab.juniper.net', 'brady.ultralab.juniper.net', 'maning.ultralab.juniper.net', 'asterix-re0.ultralab.juniper.net', 'timex-re0.ultralab.juniper.net', 'nyx-re0.ultralab.juniper.net', 'atlantix-re0.ultralab.juniper.net', 'sphinx.ultralab.juniper.net', 'phoenix.ultralab.juniper.net', 'chargers.ultralab.juniper.net', 'bears.ultralab.juniper.net', 'cacofonix-re0.ultralab.juniper.net', 'matrix-re0.ultralab.juniper.net', 'egypt.ultralab.juniper.net', 'turkey.ultralab.juniper.net', 'greece-re0.ultralab.juniper.net', 'holland-re0.ultralab.juniper.net', 'jtac-JA2500-r005.ultralab.juniper.net', 'jtac-JA2500-r006.ultralab.juniper.net', 'nereus.ultralab.juniper.net', 'colts.ultralab.juniper.net', 'eros.ultralab.juniper.net', 'sonata.jtac-east.jnpr.net', 'donald.jtac-east.jnpr.net', 'ares.jtac-east.jnpr.net', '10.85.4.54', '10.85.4.17', 'steelers.jtac-east.jnpr.net', 'saints.jtac-east.jnpr.net', '10.85.4.32', 'bajie.jtac-east.jnpr.net', 'lakers.jtac-east.jnpr.net', 'sonics.jtac-east.jnpr.net', 'seahwaks.jtac-east.jnpr.net', 'dolphins.jtac-east.jnpr.net', 'hermes.jtac-east.jnpr.net', 'penang.jtac-east.jnpr.net', 'mini.jtac-east.jnpr.net', 'hornets.jtac-east.jnpr.net', 'e07-17-re0.ultralab.juniper.net', 'e07-25-re0.ultralab.juniper.net', 'hypnos-re0.ultralab.juniper.net', 'panthers.ultralab.juniper.net', 'gilby.ultralab.juniper.net', 'mavericks.ultralab.juniper.net', 'alecto-re0.ultralab.juniper.net', 'halvar.ultralab.juniper.net', 'bills.jtac-east.jnpr.net', 'rams.jtac-east.jnpr.net', 'b05-22.ultralab.juniper.net', 'b05-24.ultralab.juniper.net', 'b05-26.ultralab.juniper.net', 'b05-28.ultralab.juniper.net', 'b05-30.ultralab.juniper.net', 'b05-31.ultralab.juniper.net', 'b05-32.ultralab.juniper.net', 'b05-33.ultralab.juniper.net', 'SRX5800-19_35.ultralab.juniper.net', 'SRX5800-18_19.ultralab.juniper.net']
+Thu 16 Feb 2017 12:15:44 VERBOSE pypuller.py 946 16852 cli_list read from ./cli-lists.txt: ['show version', 'show interface lo0 terse', 'show system uptime']
+Thu 16 Feb 2017 12:15:44 VERBOSE pypuller.py 961 16852 the yaml data looks:
+Thu 16 Feb 2017 12:15:44 DEBUG pypuller.py 985 16852 host_list after read from ./pypuller.yaml: ['Router2', 'Router1', '172.19.161.123', '172.19.164.5', 'matrix-re0.ultralab.juniper.net']
+Thu 16 Feb 2017 12:15:44 DEBUG pypuller.py 987 16852 cli_list after read from ./pypuller.yaml: ['show chassis hardware', 'show system core', 'show system uptime']
+Thu 16 Feb 2017 12:15:44 DEBUG pypuller.py 1013 16852 final host_list: ['punter.ultralab.juniper.net']
+Thu 16 Feb 2017 12:15:44 DEBUG pypuller.py 1014 16852 final cli_list: ['show version']
+Thu 16 Feb 2017 12:15:44 DEBUG pypuller.py 1016 16852 after processing command line argument options looks:
+Thu 16 Feb 2017 12:15:44 INFO pypuller.py 1115 16852 ====Parent process MainProcess started, PID(16852)...
+Thu 16 Feb 2017 12:15:44 DEBUG pypuller.py 795 16852 get a host: punter.ultralab.juniper.net
+Thu 16 Feb 2017 12:15:46 INFO pypuller.py 672 18136 ===>Process punter.ultralab.juniper.net started, PID(18136)...
+Thu 16 Feb 2017 12:15:46 INFO pypuller.py 721 18136 connecting to punter.ultralab.juniper.net(punter.ultralab.juniper.net) ...
+Thu 16 Feb 2017 12:15:46 DEBUG pypuller.py 544 18136 attempt (0/2)!
+Thu 16 Feb 2017 12:15:51 INFO pypuller.py 596 18136 punter.ultralab.juniper.net connected!
+Thu 16 Feb 2017 12:15:51 VERBOSE pypuller.py 759 18136 log file full path looks:/home/pings/pypuller_logs/punter.ultralab.juniper.net
+Thu 16 Feb 2017 12:15:51 INFO pypuller.py 643 18136 --->thread ""show version"" started, PID(18136)...
+Thu 16 Feb 2017 12:15:52 VERBOSE pypuller.py 652 18136 output of cli 'show version' looks:
+
+fpc0:
+--------------------------------------------------------------------------
+Hostname: Punter
+Model: qfx5100-96s-8q
+Junos: 14.1X53-D36.3
+JUNOS Base OS Software Suite [14.1X53-D36.3]
+JUNOS Base OS boot [14.1X53-D36.3]
+JUNOS Online Documentation [14.1X53-D36.3]
+JUNOS Crypto Software Suite [14.1X53-D36.3]
+JUNOS Kernel Software Suite [14.1X53-D36.3]
+JUNOS Packet Forwarding Engine Support (qfx-ex-x86-32) [14.1X53-D36.3]
+JUNOS Routing Software Suite [14.1X53-D36.3]
+JUNOS SDN Software Suite [14.1X53-D36.3]
+JUNOS Enterprise Software Suite [14.1X53-D36.3]
+JUNOS Web Management Platform Package [14.1X53-D36.3]
+JUNOS py-base-i386 [14.1X53-D36.3]
+JUNOS Host Software [14.1X53-D30.3]
+
+fpc2:
+--------------------------------------------------------------------------
+Hostname: Punter
+Model: qfx5100-96s-8q
+Junos: 14.1X53-D36.3
+JUNOS Base OS Software Suite [14.1X53-D36.3]
+JUNOS Base OS boot [14.1X53-D36.3]
+JUNOS Online Documentation [14.1X53-D36.3]
+JUNOS Crypto Software Suite [14.1X53-D36.3]
+JUNOS Kernel Software Suite [14.1X53-D36.3]
+JUNOS Packet Forwarding Engine Support (qfx-ex-x86-32) [14.1X53-D36.3]
+JUNOS Routing Software Suite [14.1X53-D36.3]
+JUNOS SDN Software Suite [14.1X53-D36.3]
+JUNOS Enterprise Software Suite [14.1X53-D36.3]
+JUNOS Web Management Platform Package [14.1X53-D36.3]
+JUNOS py-base-i386 [14.1X53-D36.3]
+JUNOS Host Software [14.1X53-D36.3]
+
+fpc3:
+--------------------------------------------------------------------------
+Hostname: Punter
+Model: qfx5100-96s-8q
+Junos: 14.1X53-D36.3
+JUNOS Base OS Software Suite [14.1X53-D36.3]
+JUNOS Base OS boot [14.1X53-D36.3]
+JUNOS Online Documentation [14.1X53-D36.3]
+JUNOS Crypto Software Suite [14.1X53-D36.3]
+JUNOS Kernel Software Suite [14.1X53-D36.3]
+JUNOS Packet Forwarding Engine Support (qfx-ex-x86-32) [14.1X53-D36.3]
+JUNOS Routing Software Suite [14.1X53-D36.3]
+JUNOS SDN Software Suite [14.1X53-D36.3]
+JUNOS Enterprise Software Suite [14.1X53-D36.3]
+JUNOS Web Management Platform Package [14.1X53-D36.3]
+JUNOS py-base-i386 [14.1X53-D36.3]
+JUNOS Host Software [14.1X53-D36.3]
+
+Thu 16 Feb 2017 12:15:52 DEBUG pypuller.py 423 18136 write to file /home/pings/pypuller_logs/punter.ultralab.juniper.net
+Thu 16 Feb 2017 12:15:52 INFO pypuller.py 657 18136 <---thread "show version" exited (1.14 sec).
+Thu 16 Feb 2017 12:15:52 INFO pypuller.py 783 18136 <===Process punter.ultralab.juniper.net exited (6.61 sec).
+Thu 16 Feb 2017 12:15:52 INFO pypuller.py 1128 16852 ====Task MainProcess runs 7.99 seconds.
+Thu 16 Feb 2017 12:50:58 INFO pyscanner.py 396 16960 ====Parent process MainProcess started, PID(16960)...
+Thu 16 Feb 2017 12:50:58 INFO pyscanner.py 163 13900 ===>Process Router2 started, PID(13900)...
+Thu 16 Feb 2017 12:50:58 INFO pyscanner.py 195 13900 connecting to Router2(172.19.164.5) ...
+Thu 16 Feb 2017 12:50:58 INFO pyscanner.py 163 2884 ===>Process Router1 started, PID(2884)...
+Thu 16 Feb 2017 12:50:58 INFO pyscanner.py 195 2884 connecting to Router1(172.19.161.123) ...
+Thu 16 Feb 2017 12:50:58 INFO pyscanner.py 163 11324 ===>Process 172.19.161.123 started, PID(11324)...
+Thu 16 Feb 2017 12:50:58 INFO pyscanner.py 195 11324 connecting to 172.19.161.123(172.19.161.123) ...
+Thu 16 Feb 2017 12:50:58 INFO pyscanner.py 163 17844 ===>Process 172.19.164.5 started, PID(17844)...
+Thu 16 Feb 2017 12:50:58 INFO pyscanner.py 195 17844 connecting to 172.19.164.5(172.19.164.5) ...
+Thu 16 Feb 2017 12:50:58 INFO pyscanner.py 163 18272 ===>Process matrix-re0.ultralab.juniper.net started, PID(18272)...
+Thu 16 Feb 2017 12:50:58 INFO pyscanner.py 195 18272 connecting to matrix-re0.ultralab.juniper.net(matrix-re0.ultralab.juniper.net) ...
+Thu 16 Feb 2017 12:50:59 WARNING pyscanner.py 127 13900 172.19.164.5:ConnectAuthError, check the user name and password!
+Thu 16 Feb 2017 12:50:59 INFO pyscanner.py 210 13900 Router2 login failed
+Thu 16 Feb 2017 12:51:03 INFO pyscanner.py 114 17844 172.19.164.5 connected!
+Thu 16 Feb 2017 12:51:03 INFO pyscanner.py 145 17844 --->thread ""show chassis hardware"" started, PID(17844)...
+Thu 16 Feb 2017 12:51:03 INFO pyscanner.py 145 17844 --->thread ""show system core"" started, PID(17844)...
+Thu 16 Feb 2017 12:51:03 INFO pyscanner.py 145 17844 --->thread ""show system uptime"" started, PID(17844)...
+Thu 16 Feb 2017 12:51:03 INFO pyscanner.py 153 17844 <---thread "show chassis hardware" exited (0.29 sec).
+Thu 16 Feb 2017 12:51:03 INFO pyscanner.py 114 18272 matrix-re0.ultralab.juniper.net connected!
+Thu 16 Feb 2017 12:51:04 INFO pyscanner.py 145 18272 --->thread ""show chassis hardware"" started, PID(18272)...
+Thu 16 Feb 2017 12:51:04 INFO pyscanner.py 145 18272 --->thread ""show system core"" started, PID(18272)...
+Thu 16 Feb 2017 12:51:04 INFO pyscanner.py 145 18272 --->thread ""show system uptime"" started, PID(18272)...
+Thu 16 Feb 2017 12:51:04 INFO pyscanner.py 153 17844 <---thread "show system core" exited (1.25 sec).
+Thu 16 Feb 2017 12:51:04 INFO pyscanner.py 153 18272 <---thread "show chassis hardware" exited (0.84 sec).
+Thu 16 Feb 2017 12:51:04 INFO pyscanner.py 153 18272 <---thread "show system core" exited (0.87 sec).
+Thu 16 Feb 2017 12:51:04 INFO pyscanner.py 153 18272 <---thread "show system uptime" exited (0.94 sec).
+Thu 16 Feb 2017 12:51:04 INFO pyscanner.py 235 18272 <===Process matrix-re0.ultralab.juniper.net exited (6.31 sec).
+Thu 16 Feb 2017 12:51:05 INFO pyscanner.py 153 17844 <---thread "show system uptime" exited (2.17 sec).
+Thu 16 Feb 2017 12:51:05 INFO pyscanner.py 235 17844 <===Process 172.19.164.5 exited (6.92 sec).
+Thu 16 Feb 2017 12:51:09 INFO pyscanner.py 114 11324 172.19.161.123 connected!
+Thu 16 Feb 2017 12:51:09 INFO pyscanner.py 114 2884 172.19.161.123 connected!
+Thu 16 Feb 2017 12:51:09 INFO pyscanner.py 145 11324 --->thread ""show chassis hardware"" started, PID(11324)...
+Thu 16 Feb 2017 12:51:09 INFO pyscanner.py 145 2884 --->thread ""show version"" started, PID(2884)...
+Thu 16 Feb 2017 12:51:09 INFO pyscanner.py 145 2884 --->thread ""show interface terse lo0"" started, PID(2884)...
+Thu 16 Feb 2017 12:51:09 INFO pyscanner.py 145 11324 --->thread ""show system core"" started, PID(11324)...
+Thu 16 Feb 2017 12:51:09 INFO pyscanner.py 145 11324 --->thread ""show system uptime"" started, PID(11324)...
+Thu 16 Feb 2017 12:51:09 INFO pyscanner.py 153 11324 <---thread "show chassis hardware" exited (0.32 sec).
+Thu 16 Feb 2017 12:51:09 INFO pyscanner.py 153 2884 <---thread "show version" exited (0.43 sec).
+Thu 16 Feb 2017 12:51:09 INFO pyscanner.py 153 2884 <---thread "show interface terse lo0" exited (0.43 sec).
+Thu 16 Feb 2017 12:51:09 INFO pyscanner.py 235 2884 <===Process Router1 exited (11.48 sec).
+Thu 16 Feb 2017 12:51:09 INFO pyscanner.py 153 11324 <---thread "show system core" exited (0.43 sec).
+Thu 16 Feb 2017 12:51:09 INFO pyscanner.py 153 11324 <---thread "show system uptime" exited (0.48 sec).
+Thu 16 Feb 2017 12:51:09 INFO pyscanner.py 235 11324 <===Process 172.19.161.123 exited (11.40 sec).
+Thu 16 Feb 2017 12:51:09 INFO pyscanner.py 404 16960 ====Task MainProcess runs 11.80 seconds.

@@ -14,6 +14,13 @@ def dummy2():
     print "print facts from dummy2:"
     print dev.facts
 
+    if 0:
+        global abc
+        abc = 1
+    if 1:
+        global abc
+        abc = 0
+
 import ipdb; ipdb.set_trace()  # XXX BREAKPOINT
 dummy1()
 dummy2()
