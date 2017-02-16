@@ -124,6 +124,39 @@ to suppress yaml file even if it exists, use "-y NONE"
 
     pings@PINGS-X240:~/pyez$ ./pypuller.py -y NONE
 
+== files
+
+all logs are by default in '~/pypuller_logs/'
+
+    pings@PINGS-X240:~/pypuller_logs$ ls -lct | head
+    total 693
+    -rw-rw-r--+ 1 pings JNPR+Group(279304)   7909 Feb 16 12:51 172.19.161.123
+    -rw-rw-r--+ 1 pings JNPR+Group(279304)   5123 Feb 16 12:51 172.19.164.5
+    -rw-rw-r--+ 1 pings JNPR+Group(279304)   2077 Feb 16 12:51 matrix-re0.ultralat
+    -rw-rw-r--+ 1 pings JNPR+Group(279304)   2049 Feb 16 12:16 punter.ultralab.jut
+    -rw-rw-r--+ 1 pings JNPR+Group(279304)    131 Feb 15 19:03 wickie.ultralab.jut
+    -rw-rw-r--+ 1 pings JNPR+Group(279304)    345 Feb 15 17:30 phoenix.ultralab.jt
+    -rw-rw-r--+ 1 pings JNPR+Group(279304)    119 Feb 15 17:29 tianjin-re0.ultralt
+    -rw-rw-r--+ 1 pings JNPR+Group(279304)   1800 Feb 15 17:29 cacofonix-re0.ultrt
+    -rw-rw-r--+ 1 pings JNPR+Group(279304) 123548 Feb 15 17:29 maya-re1.ultralab.t
+
+if '-g' was specified, it even commit the changes after each script run via
+git. later different versions of CLI output from the same router can be checked
+out easily.
+
+    pings@PINGS-X240:~/pypuller_logs$ git log --oneline
+    7545dd2 new commit
+    87ea120 new commit
+    9fa81ca new commit
+    83037cf new commit
+    9cdb76e new commit
+    8107ff7 new commit
+    05fee37 new commit
+    9ba6e98 new commit
+    4ed8311 init
+
+TODO: use a meaningful default commit message than "new commit", make it
+configurable when running the script.
 
 == CLI parameters
 
