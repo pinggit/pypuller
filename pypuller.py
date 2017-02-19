@@ -49,14 +49,14 @@ def write_file(fname, string):          # {{{2}}}
     except Exception as e:
         mylogger.debug("file write ERROR:" + fname)
         mylogger.debug(e)
-def logger(args):                           # {{{2}}}
+def logger(terse=False):                           # {{{2}}}
     logging.VERBOSE = 9 
     logging.addLevelName(logging.VERBOSE, "VERBOSE")
     def verbose(self, message, *args, **kws):
         if self.isEnabledFor(logging.VERBOSE):
             self._log(logging.VERBOSE, message, args, **kws) 
     logging.Logger.verbose = verbose
-    if args.terse:
+    if terse:
         root = multiprocessing.get_logger()
         for handler in root.handlers[:]:
             root.removeHandler(handler)
@@ -105,8 +105,8 @@ def get_master_re(host, user, password, attempt_max=10):         # {{{1}}}
     global re0, re1
     global dev, options
     normalize = options['normalize']
-    for attempt in range(attempt_max):
-        mylogger.debug("attempt (%s/%s)!" % (attempt, attempt_max))
+    for attempt in range(1, attempt_max):
+        mylogger.debug("attempting (%s/%s)!" % (attempt, attempt_max))
         try:                            # {{{2}}}
             dev = Device(host=host, user=user, password=password,
                     normalize=normalize)
@@ -159,9 +159,7 @@ def save_cli_process_mthread(options, host, fname=None): # {{{1}}}
     '''
     global dev
     name = multiprocessing.current_process().name
-    mylogger.info('===>Process %s started, PID(%s)...' % \
-                    (name, os.getpid())
-    )
+    mylogger.info('===>Process %s PID(%s)...' % (name, os.getpid()))
     start = time()
     normalize_ori        = options['normalize']
     options['normalize'] = False
@@ -208,7 +206,7 @@ def save_cli_process_mthread(options, host, fname=None): # {{{1}}}
             mylogger.info("ConnectNotMasterError, other RE info N/A...")
     if not dev:
         mylogger.info("%s login failed", host)
-        return None
+        return host
     options['normalize'] = normalize_ori
     if fname is None:
         fname = "%s_%s" % (dev.hostname, curr_time())
@@ -240,7 +238,7 @@ def save_cli_mprocess_mthread(options, fname=None): # {{{1}}}
     jobs = []
     for host in host_list:
         mylogger.debug("get a host: %s" % host)
-        process_name = "%s" % host
+        process_name = host
         p = multiprocessing.Process(name=process_name,
                                     target=save_cli_process_mthread,
                                     args=(options, host, fname))
@@ -361,10 +359,17 @@ def args_process(args, options): # {{{1}}}
             options['host_list'] = y1_routers + y1['hosts']
         if pyaml_list[1].get('clies') is not None:
             options['cli_list']  = y1['clies']
-    mylogger.debug("host_list after read from %s: %s" % \
-            (options['yaml_file'], options['host_list']))
-    mylogger.debug("cli_list after read from %s: %s" % \
-            (options['yaml_file'], options['cli_list']))
+    mylogger.verbose(
+            "host_list after read from %s:\n%s" % 
+            (
+                options['yaml_file'], 
+                pprint.pformat(options['host_list'])
+            )
+    )
+    mylogger.verbose(
+            "cli_list after read from %s:\n%s" % 
+            (options['yaml_file'], pprint.pformat(options['cli_list']))
+    )
     if args.user is not None:
         options['user'] = args.user
     if args.password is not None:
@@ -379,24 +384,92 @@ def args_process(args, options): # {{{1}}}
         options['host_list'] = args.host_list
     if args.cli_list:
         options['cli_list'] = args.cli_list
-    mylogger.debug("final host_list: %s" % options['host_list'])
-    mylogger.debug("final cli_list: %s" % options['cli_list'])
-    mylogger.debug("after processing command line argument options looks:")
-    if options['debug'] > 1:
-        pp(options)
+    mylogger.verbose("final host_list:\n%s" %
+            pprint.pformat(options['host_list']))
+    mylogger.verbose("final cli_list:\n%s" %
+            pprint.pformat(options['cli_list']))
+    mylogger.verbose("after processing command line args options looks:\n%s" % 
+            pprint.pformat(options))
     return options
+class Consumer(multiprocessing.Process): # {{{1}}}
+    def __init__(self, task_queue, result_queue):       # {{{2}}}
+        mylogger.verbose("initiating a Consumer...")
+        multiprocessing.Process.__init__(self)
+        self.task_queue = task_queue
+        self.result_queue = result_queue
+    def run(self):                                      # {{{2}}}
+        proc_name = self.name
+        mylogger.debug(proc_name + ' get started (in "run")...')
+        while True:
+            mylogger.debug(proc_name + " try to get a task...")
+            next_task = self.task_queue.get()
+            mylogger.debug('%s:got a (next) task:%s from tasks queue' % \
+                    (proc_name, next_task))
+            if next_task is None:
+                mylogger.debug('%s: got a None task, Exiting' % proc_name)
+                self.task_queue.task_done()
+                break
+            mylogger.debug('%s: object (Task) call to get it executed' %
+                    proc_name)
+            answer = next_task()
+            self.task_queue.task_done()
+            if answer is not None:
+                self.result_queue.put(answer)
+        return
+class Task(object): # {{{1}}}
+    def __init__(self, options, host):  # {{{2}}}
+        self.options = options
+        self.host = host
+        mylogger.debug('Task init: %s ...' % (self.host))
+    def __call__(self):                 # {{{2}}}
+        mylogger.debug('task called to be executed:%s ...' % (self.host))
+        host_fail = save_cli_process_mthread(options, self.host, fname=None)
+        if host_fail is not None:
+            return self.host
+    def __str__(self):                  # {{{2}}}
+        return '%s' % (self.host)
 def main():                     # {{{1}}}
     global options
     global mylogger
     args = args_gen()
-    mylogger = logger(args)
-    options = args_process(args, options)
+    mylogger = logger(args.terse)
     name = multiprocessing.current_process().name
     mylogger.info('====Parent process %s started, PID(%s)...' % \
                     (name, os.getpid())
     )
     start = time()
-    save_cli_mprocess_mthread(options)
+    options = args_process(args, options)
+    mylogger.debug("create a Queue as tasks queue")
+    tasks = multiprocessing.JoinableQueue()
+    mylogger.debug("create a Queue as results queue")
+    results = multiprocessing.Queue()
+    num_consumers = multiprocessing.cpu_count() * 2
+    mylogger.debug("create %s consumers/works" % num_consumers)
+    consumers = [ Consumer(tasks, results) for i in xrange(num_consumers) ]
+    mylogger.verbose("list of consumers looks %s" % pprint.pformat(consumers))
+    mylogger.debug("start all %s consumers, 1s interval" % num_consumers)
+    for w in consumers:
+        w.start()
+    host_list = options['host_list']
+    cli_list  = options['cli_list']
+    for host in host_list:
+        mylogger.debug("get a host: %s, put in tasks queue..." % host)
+        process_name = host
+        tasks.put(Task(options, host))
+    mylogger.debug("put %s poison tasks" % num_consumers)
+    for i in xrange(num_consumers):
+        tasks.put(None)
+    mylogger.debug("tasks.join")
+    tasks.join()
+    failed_hosts = []
+    while True:
+        if results.empty():
+            break
+        else:
+            failed_host=results.get()
+            failed_hosts.append(failed_host)
+    mylogger.warn("these hosts failed on connection:\n %s" %
+                    pprint.pformat(failed_hosts))
     if options['commit']:
         git_submit()
     end = time()

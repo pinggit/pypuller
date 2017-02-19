@@ -1,3 +1,3 @@
 show version
-show interface lo0 terse
-show system uptime
+show chassis hardware
+show chassis fpc pic-status
