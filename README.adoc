@@ -67,64 +67,324 @@
 :tabledef-default.subs: normal,callouts 
 //seems no use
 :max-width: 150em
+:private!:
+
+this file is **NOT** up-to-date.
 
 == what is this
 
 "pypuller" is a small python script that scans configured routers and pulls
 info from them. for each router it spawns a new process, and this process will
-connect to the router and (if the connection succeeds) pull info by sending
-commands, and then save the output of the commands into a local file. for every
-command it sends, a new thread will be started. the performance is good because
-of the concurrency in both process and thread level. in theory, the overall
-duration when pulling multiple routers with multiple commands, will be roughly
-the same as processing time of the slowest command returned from one of the
-routers.
+connect to the router (using ssh or netconf over ssh) and (if the connection
+succeeds) pull info by sending commands, and then save the output of the
+commands into a local file. for every command it sends, a new thread will be
+started. the performance is good because of the concurrency in both process and
+thread level. in theory, the overall duration when pulling multiple routers
+with multiple commands, will be roughly the same as processing time of the
+slowest command returned from one of the routers.
 
 == how to run
 
-to pull one command "show version" from one Junos device:
+to pull one command "show version" from one Junos device
 
-    pings@PINGS-X240:~/pyez$ ./pypuller.py -r "punter.ultralab.juniper.net" -c "show version"
+    pings@PINGS-X240:~/pypuller$ ./pypuller.py -r "punter.ultralab.juniper.net" \
+        -c "show version"
+
+this will assume username 'labroot' and password 'lab123', use '-u/-p' argument
+to specify different login account:
+
+    pings@PINGS-X240:~/pypuller$ ./pypuller.py -r "punter.ultralab.juniper.net" \
+        -c "show version" -u 'abc' -p '123'
+
+the default protocol used is 'ssh', use '-P' to specify other options:
+
+* netconf
+* smart
+
+the '-P "netconf"' will make the script trigger netconf over ssh connection
+into the Junos device, using Junos pyez module.
+
+'-P "smart"' option will start from netconf, then ssh if failed.
 
 to pull multiple commands, from multliple devices:
 
-    pings@PINGS-X240:~/pyez$ ./pypuller.py \
+    pings@PINGS-X240:~/pypuller$ ./pypuller.py \
 	-r "punter.ultralab.juniper.net" \
 	-r "seahawks-re0.ultralab.juniper.net" \
 	-c "show version" -c "show system uptime"
 
-instead of specify each router and command from CLI (-r, -c), if
-router-list.txt or/and cli-lists.txt exists in same folder, read the router and
-cli list info from these files:
+instead of specify each router and command from CLI (-r, -c), if files
+'router-list.txt' or/and 'cli-lists.txt' exists in same folder, the script will
+read these files and generates the router and cli list respectively.
 
-    pings@PINGS-X240:~/pyez$ cat cli-lists.txt | head
+    pings@PINGS-X240:~/pypuller$ cat cli-lists.txt | head
     show version
     show interface lo0 terse
     show system uptime
     ......
 
-    pings@PINGS-X240:~/pyez$ cat router-lists.txt | head
+    pings@PINGS-X240:~/pypuller$ cat router-lists.txt | head
     matrix-re0.ultralab.juniper.net
     mango-re0.ultralab.juniper.net
     bombay-re1.ultralab.juniper.net
     ......
 
-    pings@PINGS-X240:~/pyez$ ./pypuller.py
+    pings@PINGS-X240:~/pypuller$ ./pypuller.py
 
-if pypuller.yaml file exists in same folder, read the configuration from the file
-(this is default behavior, if pypuller.yaml file exists in the same folder)
+by default, the script will check the number of CPU in the host, and use 3
+times of this number as the default number of processes to be spawned or the
+number of hosts provided, whichever is smaller. argument '-n' can be used to
+change this number:
 
-    pings@PINGS-X240:~/pyez$ ./pypuller.py -y pypuller.yaml
+* '5c': 5 times of CPU numbers. if the host has 2 CPUs, 10 processes will be
+  spawned to process all hosts
+* 200: spawn 200 processes
+* 0:   unlimited. for each host spawn a process
 
-or:
+    pings@PINGS-X240:~pypuller$ ./pypuller.py -n "5c" -y NONE
 
-    pings@PINGS-X240:~/pyez$ ./pypuller.py
+if file 'pypuller.yaml' exists in same folder, read the configuration info from
+this file. to specify a different yaml config file, use '-y' argument:
 
-to suppress yaml file even if it exists, use "-y NONE"
+    pings@PINGS-X240:~/pypuller$ ./pypuller.py -y mypypuller.yaml
 
-    pings@PINGS-X240:~/pyez$ ./pypuller.py -y NONE
+to suppress yaml file even if 'pypuller.yaml' exists, use "-y NONE"
+
+    pings@PINGS-X240:~/pypuller$ ./pypuller.py -y NONE
+
+there are many other command line arguments to adjust the running behavior. run
+'pypuller -h' to get a list.
+
+== how does it work
+
+.17 concurrent processes
+----
+ping@ubuntu47-3:~/pypuller$ ps -ef | grep -i pypuller
+ping     21134 27585  2 12:51 pts/70   00:00:01 python ./pypuller.py -y NONE <1>
+ping     21140 21134  8 12:51 pts/70   00:00:03 python ./pypuller.py -y NONE <2>
+ping     21141 21134  5 12:51 pts/70   00:00:02 python ./pypuller.py -y NONE
+ping     21142 21134  2 12:51 pts/70   00:00:00 python ./pypuller.py -y NONE
+ping     21143 21134  5 12:51 pts/70   00:00:02 python ./pypuller.py -y NONE
+ping     21144 21134  7 12:51 pts/70   00:00:02 python ./pypuller.py -y NONE
+ping     21145 21134  0 12:51 pts/70   00:00:00 python ./pypuller.py -y NONE
+ping     21146 21134  5 12:51 pts/70   00:00:01 python ./pypuller.py -y NONE
+ping     21147 21134  4 12:51 pts/70   00:00:01 python ./pypuller.py -y NONE
+ping     21148 21134  0 12:51 pts/70   00:00:00 python ./pypuller.py -y NONE
+ping     21149 21134  3 12:51 pts/70   00:00:01 python ./pypuller.py -y NONE
+ping     21150 21134  9 12:51 pts/70   00:00:03 python ./pypuller.py -y NONE
+ping     21151 21134  0 12:51 pts/70   00:00:00 python ./pypuller.py -y NONE
+ping     21152 21134  0 12:51 pts/70   00:00:00 python ./pypuller.py -y NONE
+ping     21153 21134  3 12:51 pts/70   00:00:01 python ./pypuller.py -y NONE
+ping     21154 21134  7 12:51 pts/70   00:00:02 python ./pypuller.py -y NONE
+ping     21155 21134  6 12:51 pts/70   00:00:02 python ./pypuller.py -y NONE <3>
+----
+
+<1> the 1 "main process" with PID 21134
+<2> the first subprocess (PID 21140) of the 16 (2 * 8 processors) subprocesses
+,PID ranges '21140~21155', spawned by the main process 22498.
+<3> the last subprocess (PID 21155)
+
+.subprocess (21155) and its threads
+----
+ping@ubuntu47-3:~/pypuller$ ps -p 21155 -lfT
+F S UID        PID  SPID  PPID  C PRI  NI ADDR SZ WCHAN  STIME TTY          TIME CMD
+1 S ping     21155 21155 21134  0  80   0 - 284157 inet_s 12:51 pts/70  00:00:00 python ./pypuller.py -y NONE
+1 S ping     21155 21168 21134  0  80   0 - 284157 poll_s 12:51 pts/70  00:00:01 python ./pypuller.py -y NONE
+1 S ping     21155 21187 21134  0  80   0 - 284157 poll_s 12:51 pts/70  00:00:00 python ./pypuller.py -y NONE
+1 S ping     21155 21194 21134  0  80   0 - 284157 poll_s 12:51 pts/70  00:00:01 python ./pypuller.py -y NONE
+1 S ping     21155 21196 21134  0  80   0 - 284157 poll_s 12:51 pts/70  00:00:00 python ./pypuller.py -y NONE
+1 S ping     21155 21484 21134  0  80   0 - 284157 futex_ 12:53 pts/70  00:00:00 python ./pypuller.py -y NONE
+1 S ping     21155 21485 21134  0  80   0 - 284157 poll_s 12:53 pts/70  00:00:00 python ./pypuller.py -y NONE
+1 S ping     21155 21495 21134  0  80   0 - 284157 poll_s 12:53 pts/70  00:00:00 python ./pypuller.py -y NONE
+1 S ping     21155 21544 21134  0  80   0 - 284157 poll_s 12:53 pts/70  00:00:00 python ./pypuller.py -y NONE
+1 S ping     21155 21561 21134  0  80   0 - 284157 poll_s 12:53 pts/70  00:00:00 python ./pypuller.py -y NONE
+1 S ping     21155 21600 21134  0  80   0 - 284157 poll_s 12:53 pts/70  00:00:00 python ./pypuller.py -y NONE
+1 S ping     21155 21602 21134  0  80   0 - 284157 poll_s 12:53 pts/70  00:00:00 python ./pypuller.py -y NONE
+----
+
+.the "tree" view of the subprocesses and threads generated by 'pypuller':
+----
+ping@ubuntu47-3:~/pypuller$ pstree -ap
+
+  ├─tmux,2374 new -s fuf
+  │   ├─bash,27585                                      <1>
+  │   │   ├─ipython,15173 /usr/local/bin/ipython
+  │   │   │   └─{ipython},15191
+  │   │   └─python,21134 ./pypuller.py -y NONE          <2>
+  │   │       ├─python,21140 ./pypuller.py -y NONE        │   │       ├─python,21149 ./pypuller.py -y NONE <3>
+  │   │       │   ├─{python},21163                        │   │       │   ├─{python},21170                 <4>
+  │   │       │   ├─{python},21243                        │   │       │   ├─{python},21186
+  │   │       │   ├─{python},21261                        │   │       │   ├─{python},21477
+  │   │       │   ├─{python},21263                        │   │       │   ├─{python},21478
+  │   │       │   ├─{python},21590                        │   │       │   ├─{python},21504
+  │   │       │   ├─{python},21591                        │   │       │   ├─{python},21535
+  │   │       │   └─{python},21604                        │   │       │   └─{python},21558
+  │   │       ├─(python,21141)                            │   │       ├─python,21150 ./pypuller.py -y NONE
+  │   │       ├─python,21142 ./pypuller.py -y NONE        │   │       │   ├─{python},21176
+  │   │       │   ├─{python},21162                        │   │       │   ├─{python},21179
+  │   │       │   ├─{python},21218                        │   │       │   ├─{python},21188
+  │   │       │   ├─{python},21496                        │   │       │   ├─{python},21221
+  │   │       │   ├─{python},21497                        │   │       │   ├─{python},21224
+  │   │       │   ├─{python},21499                        │   │       │   ├─{python},21503
+  │   │       │   ├─{python},21549                        │   │       │   └─{python},21511
+  │   │       │   └─{python},21562                        │   │       ├─python,21151 ./pypuller.py -y NONE
+  │   │       ├─(python,21143)                            │   │       │   ├─{python},21468
+  │   │       ├─python,21144 ./pypuller.py -y NONE        │   │       │   ├─{python},21470
+  │   │       │   ├─{python},21161                        │   │       │   ├─{python},21476
+  │   │       │   ├─{python},21227                        │   │       │   ├─{python},21486
+  │   │       │   ├─{python},21264                        │   │       │   ├─{python},21554
+  │   │       │   ├─{python},21269                        │   │       │   ├─{python},21598
+  │   │       │   ├─{python},21585                        │   │       │   ├─{python},21618
+  │   │       │   ├─{python},21587                        │   │       │   ├─{python},21630
+  │   │       │   ├─{python},21624                        │   │       │   ├─{python},21643
+  │   │       │   ├─{python},21640                        │   │       │   ├─{python},21653
+  │   │       │   ├─{python},21658                        │   │       │   ├─{python},21659
+  │   │       │   ├─{python},21671                        │   │       │   ├─{python},21669
+  │   │       │   ├─{python},21672                        │   │       │   └─{python},21674
+  │   │       │   └─{python},21673                        │   │       ├─python,21152 ./pypuller.py -y NONE
+  │   │       ├─python,21145 ./pypuller.py -y NONE        │   │       │   ├─{python},21467
+  │   │       │   └─{python},21463                        │   │       │   ├─{python},21469
+  │   │       ├─python,21146 ./pypuller.py -y NONE        │   │       │   ├─{python},21493
+  │   │       │   ├─{python},21164                        │   │       │   ├─{python},21527
+  │   │       │   ├─{python},21219                        │   │       │   ├─{python},21556
+  │   │       │   ├─{python},21294                        │   │       │   ├─{python},21566
+  │   │       │   ├─{python},21300                        │   │       │   ├─{python},21572
+  │   │       │   ├─{python},21304                        │   │       │   ├─{python},21586
+  │   │       │   ├─{python},21308                        │   │       │   ├─{python},21623
+  │   │       │   ├─{python},21312                        │   │       │   ├─{python},21638
+  │   │       │   ├─{python},21317                        │   │       │   ├─{python},21657
+  │   │       │   ├─{python},21328                        │   │       │   └─{python},21665
+  │   │       │   ├─{python},21345                        │   │       ├─python,21153 ./pypuller.py -y NONE
+  │   │       │   ├─{python},21383                        │   │       │   ├─{python},21178
+  │   │       │   ├─{python},21388                        │   │       │   ├─{python},21181
+  │   │       │   ├─{python},21392                        │   │       │   ├─{python},21185
+  │   │       │   ├─{python},21395                        │   │       │   ├─{python},21474
+  │   │       │   ├─{python},21399                        │   │       │   └─{python},21490
+  │   │       │   ├─{python},21407                        │   │       ├─python,21154 ./pypuller.py -y NONE
+  │   │       │   ├─{python},21411                        │   │       │   ├─{python},21169
+  │   │       │   ├─{python},21413                        │   │       │   ├─{python},21184
+  │   │       │   ├─{python},21417                        │   │       │   ├─{python},21212
+  │   │       │   ├─{python},21431                        │   │       │   ├─{python},21236
+  │   │       │   └─{python},21435                        │   │       │   ├─{python},21489
+  │   │       ├─python,21147 ./pypuller.py -y NONE        │   │       │   ├─{python},21492
+  │   │       │   ├─{python},21160                        │   │       │   ├─{python},21555
+  │   │       │   ├─{python},21225                        │   │       │   ├─{python},21596
+  │   │       │   ├─{python},21513                        │   │       │   ├─{python},21614
+  │   │       │   ├─{python},21514                        │   │       │   ├─{python},21628
+  │   │       │   └─{python},21567                        │   │       │   ├─{python},21642
+  │   │       ├─python,21148 ./pypuller.py -y NONE        │   │       │   ├─{python},21648
+  │   │       │   ├─{python},21464                        │   │       │   └─{python},21656
+  │   │       │   ├─{python},21465                        │   │       ├─python,21155 ./pypuller.py -y NONE
+  │   │       │   ├─{python},21491                        │   │       │   ├─{python},21168
+  │   │       │   ├─{python},21509                        │   │       │   ├─{python},21187
+  │   │       │   ├─{python},21512                        │   │       │   ├─{python},21194
+  │   │       │   ├─{python},21557                        │   │       │   ├─{python},21196
+  │   │       │   └─{python},21592                        │   │       │   ├─{python},21484
+                                                          │   │       │   ├─{python},21485
+                                                          │   │       │   ├─{python},21495
+                                                          │   │       │   ├─{python},21544
+                                                          │   │       │   ├─{python},21561
+                                                          │   │       │   ├─{python},21600
+                                                          │   │       │   └─{python},21602
+                                                          │   │       └─{python},21156
+                                                          │   ├─bash,29570
+                                                          │   │   └─expect,16909 /home/ping/bin/crtc/crtc pe50@attlab
+----
+<1> the bash shell where the scipt is running from
+<2> the main process of the script
+<3> the subprocess
+<4> the thread
+
+== running logs
+
+TODO
+
+----
+Sat 18 Feb 2017 23:05:57 INFO pypuller.py 1241 5501 ====Task MainProcess runs 137.40 seconds.
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 675 21140 ===>Process Worker-1 PID(21140)...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 723 21140 connecting to 172.19.161.123(172.19.161.123) ...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 675 21141 ===>Process Worker-2 PID(21141)...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 723 21141 connecting to 172.19.164.5(172.19.164.5) ...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 675 21143 ===>Process Worker-4 PID(21143)...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 723 21143 connecting to matrix-re0.ultralab.juniper.net(matrix-re0.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 675 21142 ===>Process Worker-3 PID(21142)...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 723 21142 connecting to mango-re0.ultralab.juniper.net(mango-re0.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 675 21144 ===>Process Worker-5 PID(21144)...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 675 21146 ===>Process Worker-7 PID(21146)...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 675 21145 ===>Process Worker-6 PID(21145)...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 723 21144 connecting to perth.ultralab.juniper.net(perth.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 675 21147 ===>Process Worker-8 PID(21147)...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 675 21148 ===>Process Worker-9 PID(21148)...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 723 21147 connecting to core3.ultralab.juniper.net(core3.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 723 21146 connecting to core1.ultralab.juniper.net(core1.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 723 21148 connecting to core2.ultralab.juniper.net(core2.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 675 21151 ===>Process Worker-12 PID(21151)...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 675 21152 ===>Process Worker-13 PID(21152)...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 675 21150 ===>Process Worker-11 PID(21150)...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 675 21149 ===>Process Worker-10 PID(21149)...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 723 21151 connecting to robin-re0.ultralab.juniper.net(robin-re0.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 723 21145 connecting to bombay-re1.ultralab.juniper.net(bombay-re1.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 723 21149 connecting to joker.ultralab.juniper.net(joker.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 723 21150 connecting to firefly-re1.ultralab.juniper.net(firefly-re1.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 675 21154 ===>Process Worker-15 PID(21154)...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 675 21155 ===>Process Worker-16 PID(21155)...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 723 21154 connecting to bluebird-re0.ultralab.juniper.net(bluebird-re0.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 723 21155 connecting to hawkfire-re1.ultralab.juniper.net(hawkfire-re1.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 723 21152 connecting to batman-re0.ultralab.juniper.net(batman-re0.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 675 21153 ===>Process Worker-14 PID(21153)...
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 723 21153 connecting to bane.ultralab.juniper.net(bane.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:02 WARNING pypuller.py 624 21150 firefly-re1.ultralab.juniper.net:ConnectRefusedError, check the router config!
+Sun 19 Feb 2017 12:51:02 INFO pypuller.py 747 21150 firefly-re1.ultralab.juniper.net login failed
+Sun 19 Feb 2017 12:51:03 INFO pypuller.py 675 21150 ===>Process Worker-11 PID(21150)...
+Sun 19 Feb 2017 12:51:03 INFO pypuller.py 723 21150 connecting to yin-re0.ultralab.juniper.net(yin-re0.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:03 WARNING pypuller.py 624 21153 bane.ultralab.juniper.net:ConnectRefusedError, check the router config!
+Sun 19 Feb 2017 12:51:03 INFO pypuller.py 747 21153 bane.ultralab.juniper.net login failed
+Sun 19 Feb 2017 12:51:03 INFO pypuller.py 675 21153 ===>Process Worker-14 PID(21153)...
+Sun 19 Feb 2017 12:51:03 INFO pypuller.py 723 21153 connecting to yang-re0.ultralab.juniper.net(yang-re0.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:03 WARNING pypuller.py 624 21153 yang-re0.ultralab.juniper.net:ConnectRefusedError, check the router config!
+Sun 19 Feb 2017 12:51:03 INFO pypuller.py 747 21153 yang-re0.ultralab.juniper.net login failed
+Sun 19 Feb 2017 12:51:03 INFO pypuller.py 675 21153 ===>Process Worker-14 PID(21153)...
+Sun 19 Feb 2017 12:51:03 INFO pypuller.py 723 21153 connecting to kadal-re0.ultralab.juniper.net(kadal-re0.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:04 INFO pypuller.py 600 21155 hawkfire-re1.ultralab.juniper.net connected!
+Sun 19 Feb 2017 12:51:04 INFO pypuller.py 647 21155 --->thread ""show version"" started, PID(21155)...
+Sun 19 Feb 2017 12:51:04 INFO pypuller.py 647 21155 --->thread ""show chassis hardware"" started, PID(21155)...
+Sun 19 Feb 2017 12:51:04 INFO pypuller.py 647 21155 --->thread ""show chassis fpc pic-status"" started, PID(21155)...
+Sun 19 Feb 2017 12:51:04 INFO pypuller.py 661 21155 <---thread "show chassis hardware" exited (0.35 sec).
+Sun 19 Feb 2017 12:51:04 INFO pypuller.py 661 21155 <---thread "show version" exited (0.36 sec).
+Sun 19 Feb 2017 12:51:04 INFO pypuller.py 661 21155 <---thread "show chassis fpc pic-status" exited (0.40 sec).
+Sun 19 Feb 2017 12:51:04 INFO pypuller.py 785 21155 <===Process Worker-16 exited (2.13 sec).
+Sun 19 Feb 2017 12:51:04 INFO pypuller.py 675 21155 ===>Process Worker-16 PID(21155)...
+Sun 19 Feb 2017 12:51:04 INFO pypuller.py 723 21155 connecting to kappal-re0.ultralab.juniper.net(kappal-re0.ultralab.juniper.net) ...
+Sun 19 Feb 2017 12:51:05 INFO pypuller.py 600 21153 kadal-re0.ultralab.juniper.net connected!
+Sun 19 Feb 2017 12:51:05 INFO pypuller.py 647 21153 --->thread ""show version"" started, PID(21153)...
+Sun 19 Feb 2017 12:51:05 INFO pypuller.py 647 21153 --->thread ""show chassis hardware"" started, PID(21153)...
+Sun 19 Feb 2017 12:51:05 INFO pypuller.py 647 21153 --->thread ""show chassis fpc pic-status"" started, PID(21153)...
+...<snippet>...
+Sun 19 Feb 2017 13:14:04 INFO pypuller.py 748 22524 panthers.ultralab.juniper.net login failed
+Sun 19 Feb 2017 13:14:04 WARNING pypuller.py 605 22515 b05-31.ultralab.juniper.net:ConnectTimeOutError, will reconnect afer 10s...
+Sun 19 Feb 2017 13:14:07 WARNING pypuller.py 605 22525 b05-33.ultralab.juniper.net:ConnectTimeOutError, will reconnect afer 10s...
+Sun 19 Feb 2017 13:14:11 INFO pypuller.py 748 22514 gilby.ultralab.juniper.net login failed
+Sun 19 Feb 2017 13:14:13 INFO pypuller.py 748 22512 b05-22.ultralab.juniper.net login failed
+Sun 19 Feb 2017 13:14:13 INFO pypuller.py 748 22513 b05-24.ultralab.juniper.net login failed
+Sun 19 Feb 2017 13:14:14 INFO pypuller.py 748 22515 b05-31.ultralab.juniper.net login failed
+Sun 19 Feb 2017 13:14:17 INFO pypuller.py 748 22525 b05-33.ultralab.juniper.net login failed
+Sun 19 Feb 2017 13:14:17 WARNING pypuller.py 1234 22498 these hosts failed on connection:
+ ['bane.ultralab.juniper.net',
+ 'firefly-re1.ultralab.juniper.net',
+ 'yang-re0.ultralab.juniper.net',
+ 'jtac-mx80-r071.ultralab.juniper.net',
+ 'jtac-mx80-r072.ultralab.juniper.net',
+ 'Getafix-re0.ultralab.juniper.net',
+ 'core2.ultralab.juniper.net',
+ 'bombay-re1.ultralab.juniper.net',
+ 'batman-re0.ultralab.juniper.net',
+ 'robin-re0.ultralab.juniper.net',
+...<snippet>...
+----
 
 == files
+
+.data files
 
 all logs are by default in '~/pypuller_logs/'
 
@@ -158,27 +418,72 @@ out easily.
 TODO: use a meaningful default commit message than "new commit", make it
 configurable when running the script.
 
+.script log 'pypuller.log' 
+
+file recording script running logs, useful for debugging.
+
+
 == CLI parameters
 
-    pings@PINGS-X240:~/pyez$ ./pypuller.py -h
-    usage: pypuller.py [-h] [-u USER] [-p PASSWORD] [-R ROUTER_FILE] [-C CLI_FILE]
-		       [-l LOG_DIR] [-y YAML_FILE] [-r HOST_LIST] [-c CLI_LIST]
-		       [-g] [--version] [-d | -t]
+    pings@PINGS-X240:~/pypuller$ ./pypuller.py -h
+    usage: pypuller.py [-h] [-u USER] [-p PASSWORD] [-n PROCESSES] [-P PROTOCOL]
+		       [-R HOST_FILE] [-C CLI_FILE] [-l LOG_DIR] [-y YAML_FILE]
+		       [-r HOST_LIST] [-c CLI_LIST] [-g] [-v] [-d | -t]
+		       [--normalize NORMALIZE] [--processes PROCESSES]
+		       [--password PASSWORD] [--protocol PROTOCOL]
+		       [--result RESULT] [--re1 RE1] [--re0 RE0]
+		       [--host_file HOST_FILE] [--attempt_max ATTEMPT_MAX]
+		       [--host_list HOST_LIST] [--port PORT]
+		       [--force_hfile FORCE_HFILE] [--package PACKAGE]
+		       [--iteration_max ITERATION_MAX] [--log_dir LOG_DIR]
+		       [--cli_file CLI_FILE] [--debug DEBUG] [--commit COMMIT]
+		       [--yaml_file YAML_FILE] [--cli_list CLI_LIST] [--user USER]
 
     optional arguments:
-      -h, --help      show this help message and exit
-      -u USER         user name
-      -p PASSWORD     password
-      -R ROUTER_FILE  a file that has list of routers
-      -C CLI_FILE     a file that has list of CLIes
-      -l LOG_DIR      log dir
-      -y YAML_FILE    yaml_file, use "NONE" to suppress
-      -r HOST_LIST    Add hosts to a list
-      -c CLI_LIST     Add CLIes to a list
-      -g              commit to repo (via git)
-      --version       show program's version number and exit
-      -d, -dd         increase debug verbosity, -dd for even more info
-      -t, --terse     decrease verbosity
+      -h, --help            show this help message and exit
+      -u USER               user name
+      -p PASSWORD           password
+      -n PROCESSES          (TODO) number of concurrent processes
+      -P PROTOCOL           protocol (netconf, ssh)
+      -R HOST_FILE          a file that has list of hosts
+      -C CLI_FILE           a file that has list of CLIes
+      -l LOG_DIR            log dir
+      -y YAML_FILE          yaml_file, use "NONE" to suppress
+      -r HOST_LIST          Add hosts to a list
+      -c CLI_LIST           Add CLIes to a list
+      -g                    commit to repo (via git)
+      -v, --version         show program's version number and exit
+      -d                    increase debug verbosity, -dd for even more info
+      -t, --terse           decrease verbosity
+      --normalize NORMALIZE
+			    options
+      --processes PROCESSES
+			    options
+      --password PASSWORD   options
+      --protocol PROTOCOL   options
+      --result RESULT       options
+      --re1 RE1             options
+      --re0 RE0             options
+      --host_file HOST_FILE
+			    options
+      --attempt_max ATTEMPT_MAX
+			    options
+      --host_list HOST_LIST
+			    options
+      --port PORT           options
+      --force_hfile FORCE_HFILE
+			    options
+      --package PACKAGE     options
+      --iteration_max ITERATION_MAX
+			    options
+      --log_dir LOG_DIR     options
+      --cli_file CLI_FILE   options
+      --debug DEBUG         options
+      --commit COMMIT       options
+      --yaml_file YAML_FILE
+			    options
+      --cli_list CLI_LIST   options
+      --user USER           options
 
 == yaml file: pypuller.yaml
 
@@ -261,4 +566,46 @@ Router2:
             pass
 
     CLI options: other options
+
+== TODO
+
+* change to *OOP* model
+* add DB support
+* add unittest
+
+ifdef::private[]
+
+== script flow
+
+'args_def' to define args::
+create logger for logging::
+'args_process' to populate CLI args into options::
+assign dual queues: 'tasks'/'results'::
+register 'worker' processes:  'Worker(tasks, results)'::
+  - 'Worker' run '__init__'
+    * passing the dual queues into 'Worker' class
+start workers: w.start()::
+  - call Worker.run()
+    * get a task: 'next_task = self.task_queue.get()'
+    * get the answer: 'result = next_task()'
+      . call Task.__call__
+        .. run 'save_cli_process_mthread', return result
+  
+            result = save_cli_process_mthread(options, self.host, fname=None)
+
+    * mark task done: 'self.task_queue.task_done()'
+    * put result in result queue: 
+
+        self.result_queue.put(result)'
+
+put tasks: tasks.put(Task(options, host))::
+put "None" tasks: tasks.put(None)::
+tasks.join()::
+print results: failed_host=results.get()::
+
+=== start workers : w.start()
+
+
+
+endif::private[]
 

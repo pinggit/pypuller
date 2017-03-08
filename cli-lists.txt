@@ -1,3 +1,9 @@
+# Junos commands
+
 show version
 show chassis hardware
 show chassis fpc pic-status
+
+# linux command
+## uptime
+## df -h

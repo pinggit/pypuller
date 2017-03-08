@@ -5,6 +5,7 @@ router_file   : './router-lists.txt'    # -R
 cli_file      : './cli-lists.txt'       # -C
 log_dir       : '~/pypuller_logs'       # -l
 commit        : False                   # -g
+protocol      : netconf                 # -P
 
 normalize     : True
 package       : '/var/tmp/junos-install-mx-x86-64-15.1F2-S13.tgz'
@@ -24,10 +25,12 @@ Router1:
           user  : labroot
           passwd : lab123
           su     : Juniper1
+          protocol: netconf
+          port: 830
 
     - clies:
-          - "show version"
-          - "show interface terse lo0"
+        - "show version"
+        - "show interface terse lo0"
 
 Router2:
     - hostname : 172.19.164.5
@@ -36,18 +39,39 @@ Router2:
       access   : {user: 923768, passwd: 356669, su: Juniper1}
     - clies    : *clies
 
+server1:
+    - hostname : 10.85.4.54
+      access   : {user: ping, passwd: ping1234}
+    - clies    :
+        - "ifconfig"
+        - "uptime"
+
 # this does not work
 #      <<: *clies
 #
-# ipdb> pp(options)
-# {'attempt': 0,
-#  'attempt_max': 2,
+# ipdb> pp(options)  # {{{1}}}
+# {
+#  'user': 'labroot',
+#  'password': 'lab123',
+#  'log_dir': '/home/pings/pypuller_logs',
+#  'debug': True,
+#  'router_file': './router-lists.txt',
 #  'cli_file': './cli-lists.txt',
+#  'commit': False,
+#  'attempt': 0,
+#  'attempt_max': 2,
+#  'iteration': 0,
+#  'iteration_max': 2,
+#  'normalize': True,
+#  'package': '/var/tmp/junos-install-mx-x86-64-15.1F2-S13.tgz',
+#  'yaml_file': './pypuller.yaml'
 #  'cli_list': ['show version',
 #               'show interface lo0 terse',
 #               'show system uptime'],
-#  'commit': False,
-#  'debug': True,
+#  'host_list': ['172.19.161.123',
+#                '172.19.164.5',
+#                'matrix-re0.ultralab.juniper.net'],
+# }
 #  'host': {'Router1': [{'access': {'login': 'labroot',
 #                                   'passwd': 'lab123',
 #                                   'su': 'Juniper1'},
@@ -65,20 +89,8 @@ Router2:
 #                       {'clies': ['show version',
 #                                  'show interface lo0 terse',
 #                                  'show system uptime']}]},
-#  'host_list': ['172.19.161.123',
-#                '172.19.164.5',
-#                'matrix-re0.ultralab.juniper.net'],
-#  'iteration': 0,
-#  'iteration_max': 2,
-#  'log_dir': '/home/pings/pypuller_logs',
-#  'normalize': True,
-#  'package': '/var/tmp/junos-install-mx-x86-64-15.1F2-S13.tgz',
-#  'password': 'lab123',
-#  'router_file': './router-lists.txt',
-#  'user': 'labroot',
-#  'yaml_file': './pypuller.yaml'}
 # 
-# ipdb> pp(pyaml_list)                                                                
+# ipdb> pp(pyaml_list)  # {{{1}}}
 # [
 #     {'clies': ['show version', 'show interface lo0 terse', 'show system uptime'],      
 #      'hosts': ['172.19.161.123 172.19.164.5 matrix-re0.ultralab.juniper.net']},        
