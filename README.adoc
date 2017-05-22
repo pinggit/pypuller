@@ -85,6 +85,35 @@ slowest command returned from one of the routers.
 
 == how to run
 
+the simplest way to run the script (and the most common usage) is just to enter
+the script's name and hit return:
+ 
+    pings@PINGS-X240:~/pypuller$ ./pypuller
+
+or using full path:
+
+    pings@PINGS-X240:~$ pypuller/pypuller
+
+the script will:
+
+* search for a file named host-lists.txt for host lists
+* search for a file named cli-lists.txt for cli lists
+* skip any yaml file (config file) under same folder
+* scan the host lists and issue the command lists to each host
+* for each host in host-lists: spawn a new process to connect to the host
+* for each command(cli) in cli-lists: spawn a new thread, send the cli, collect
+  the output and write to a dedicated log file.
+* the log files will be created under folder '~/pypuller_logs', which will be
+  created in the beginning if it does not exist yet.
+* the result of the scan will be logged to a file named cli-lists.txt.result,
+  under same folder of the script:
+  - connected : script connected to the host and cli output is collected.
+  - failed    : script failed to connect to the host
+* a log file 'pypuller.log' will be generated under the same folder of the
+  script. this can be used for debugging purpose
+
+== other usage
+
 to pull one command "show version" from one Junos device
 
     pings@PINGS-X240:~/pypuller$ ./pypuller.py -r "punter.ultralab.juniper.net" \
@@ -98,10 +127,11 @@ to specify different login account:
 
 the default protocol used is 'ssh', use '-P' to specify other options:
 
+* ssh (default)
 * netconf
 * smart
 
-the '-P "netconf"' will make the script trigger netconf over ssh connection
+'-P "netconf"' will make the script start a netconf over ssh connection
 into the Junos device, using Junos pyez module.
 
 '-P "smart"' option will start from netconf, then ssh if failed.
@@ -143,17 +173,13 @@ change this number:
 
     pings@PINGS-X240:~pypuller$ ./pypuller.py -n "5c" -y NONE
 
-if file 'pypuller.yaml' exists in same folder, read the configuration info from
-this file. to specify a different yaml config file, use '-y' argument:
+if file 'pypuller.yaml' exists in same folder, use '-y' to read the
+configuration info from this file. 
 
-    pings@PINGS-X240:~/pypuller$ ./pypuller.py -y mypypuller.yaml
+    pings@PINGS-X240:~/pypuller$ ./pypuller.py -y
 
-to suppress yaml file even if 'pypuller.yaml' exists, use "-y NONE"
-
-    pings@PINGS-X240:~/pypuller$ ./pypuller.py -y NONE
-
-there are many other command line arguments to adjust the running behavior. run
-'pypuller -h' to get a list.
+there are many other command line arguments to fine tune the running behavior.
+run 'pypuller -h' to get argument list.
 
 == how does it work
 
@@ -487,9 +513,10 @@ file recording script running logs, useful for debugging.
 
 == yaml file: pypuller.yaml
 
-this is why all parameters can be configured.
-it is useful if some routers have different attributres(access info, CLIes to
-pull), or need to run different commands 
+this is where all parameters can be configured.
+it is useful if some routers have different attributes(access info, CLIes to
+pull, etc), so info regarding each of these routers can be configured
+seperately, each under an individual host entry.
 
 [source,yaml,linenums]
 ----
@@ -508,7 +535,7 @@ attempt_max   : 2
 
 --- # individual host {{{1}}}
 hosts : ['172.19.161.123', '172.19.164.5', 'matrix-re0.ultralab.juniper.net']
-clies : &clies
+clies : &clies                  <1>
      ['show chassis hardware', 'show system core', 'show system uptime']
 
 Router1:
@@ -529,9 +556,10 @@ Router2:
       re0      : 172.19.164.6
       re1      : 172.19.164.7
       access   : {user: 923768, passwd: 356669, su: Juniper1}
-    - clies    : *clies
+    - clies    : *clies         <2>
 ----
-
+<1> define a "common" set of commands
+<2> refer to the common commands set defined in <1>
 
 == configuration/parameters processing flow
 
@@ -572,6 +600,7 @@ Router2:
 * change to *OOP* model
 * add DB support
 * add unittest
+* add a flow chart about worker-task model used in this script
 
 ifdef::private[]
 

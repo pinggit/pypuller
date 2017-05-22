@@ -1,0 +1,10 @@
+# junos routers
+
+matrix-re0.ultralab.juniper.net
+mango-re0.ultralab.juniper.net
+bombay-re1.ultralab.juniper.net
+
+## linux
+# 10.85.19.197
+# 10.85.19.198
+# 10.85.19.199

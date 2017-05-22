@@ -1,0 +1,1574 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# vim:set cc=80 :
+# TODO:
+# * to support multiple hosts     #<------done (2017-02-05)
+# * to add multi-process            #<------done (2017-02-05)
+# * to add multi-threading          #<------done (2017-02-06)
+# * to add logger                   #<------done (2017-02-07)
+# * to add config file (yaml):      #<------done (2017-02-09)
+#    which host do what
+# * to add argparser                #<------done (2017-02-11)
+# * subclass                            #<------done (2017-02-18)
+# * to add limit to concurrency         #<------done (2017-02-18)
+# * queue: report a failure list: IPC   #<------done (2017-02-18)
+
+# *        use a dict in results queue?             #<------done (2017-03-05) 
+# *        generate a "alive hosts" file and mark   #<------done (2017-03-05) 
+# *        ignore comment when read hosts-list.txt/cli-list.txt #<-(2017-03-05) 
+# * support non-junos device: ssh                   #<------done (2017-03-05) 
+# * support protocol "smart": netconf -> ssh        #<------(2017-03-05) 
+# * add option: number of processes                 #<------(2017-03-05) 
+# * test with large scale of hosts for more issues  #<------done(2017-03-05) 
+# * to improve: make it work with ~pings/bin/pypuller/pypuller
+# *    right now have to 'cd ~pings/bin/pypuller/' and pypuller
+#                                                   #<------done (2017-04-18)
+# * to add count in result
+# * to learn and change to oop
+# * to add unittest code
+# * to add db and subcommand support, make commands stateful
+# * to support loading junos config
+# * to support junos shell command
+# * thread lock
+# * to add jumpstation support (pexpect or crtc)
+#
+# modules {{{1}}}
+import multiprocessing
+import threading
+import datetime
+import sys, os
+import logging
+import imp
+import yaml
+import pprint
+import argparse
+import paramiko
+import re
+import subprocess
+import signal
+
+from pprint import pprint as pp
+from time import sleep, time
+from lxml import etree
+from shutil import copyfile
+
+# git module, but it looks using system call is much easier...
+# try:
+#     imp.find_module('GitPython')
+#     gitexist = True
+#     import git
+# except ImportError:
+#     gitexist = False
+
+from jnpr.junos import Device
+from jnpr.junos.utils.fs import FS
+from jnpr.junos.utils.config import Config
+from jnpr.junos.utils.start_shell import StartShell
+from jnpr.junos.utils.sw import SW
+from jnpr.junos.utils.scp import SCP
+from jnpr.junos.exception import *
+
+# options: initial defaults{{{1}}}
+
+script_folder = os.path.dirname(os.path.realpath(__file__))
+
+options                  = {}
+options['user']          = 'labroot'       # -u, --user <USER>
+options['password']      = 'lab123'        # -p, --password <PASSWORD>
+# -R, --host_file <ROUTER_FILE>
+options['host_file']     = script_folder + '/host-lists.txt'
+# -C, --cli_file <CLI_FILE>
+options['cli_file']      = script_folder + '/cli-lists.txt'   
+# options['yaml_file']     = './pypuller.yaml'   # -C, --cli_file <CLI_FILE>
+options['yaml_file']     = None   # -C, --cli_file <CLI_FILE>
+options['log_dir']       = os.path.expanduser('~/pypuller_logs') # -l
+options['commit']        = False               # -g, --git
+options['host_list']     = []
+options['cli_list']      = []
+options['normalize']     = False
+options['attempt_max']   = 2
+options['debug']         = 0
+options['protocol']      = 'ssh'    # 'netconf', 'smart'
+options['port']          = 22
+options['processes']     = multiprocessing.cpu_count() * 3
+options['re0']           = None
+options['re1']           = None
+options['package']       = '/var/tmp/junos-install-mx-x86-64-15.1F2-S13.tgz'
+options['iteration_max'] = 2
+options['force_hfile']   = False
+options['result']        = False
+
+
+# some test code {{{1}}}
+
+def rsi():                              # {{{2}}}
+
+    global dev
+    name = multiprocessing.current_process().name
+    print '====%s Run task %s, PID(%s)...' % (curr_time(), name, os.getpid())
+    start = time()
+
+    ss = StartShell(dev)
+    ss.open()
+    ss.run('cli -c "request support information | save information.txt"')
+    with SCP(dev, progress=True) as scp:
+        scp.get('information.txt', 'info.txt')
+    ss.close()
+
+
+def get_config():                       # {{{2}}}
+
+    global dev
+
+    # option1: use static rpc 'get_config'
+    # 1. get config
+    rpc_get_config = dev.rpc.get_config()
+
+    # cnf = dev.rpc.get_config(
+    #    filter_xml=etree.XML('<configuration><interfaces/></configuration>')
+    # )
+
+    # this is too much and messy
+    # print etree.tostring(cnf)
+
+    # 2. retreive only text
+    config = etree.tostring(rpc_get_config, method='text', pretty_print="True")
+
+    # 3. removing all empty lines manually
+    # no "normalize" param
+    print os.linesep.join([s for s in config.splitlines() if s])
+
+    # option2: use rescure config
+    dev.bind(cu=Config)
+    if dev.cu.rescure('save'):
+        resp = dev.cu.rescure('get', format='text')
+
+
+
+def fs():                                       # {{{2}}}
+    fs = FS(dev)
+    pprint(fs.ls('/var/tmp'))
+
+
+def show_chassis_fpc():              # {{{2}}}
+
+    global dev, attempt, attempt_max
+    global host, user, password
+    global re0
+
+    name = multiprocessing.current_process().name
+    print '====%s Run task %s, PID(%s)...' % (curr_time(), name, os.getpid())
+    start = time()
+
+    while attempt <= attempt_max:       # {{{3}}}
+        try:                            # {{{4}}}
+            # show_chassis_fpc = dev.cli('show chassis fpc')
+            # pprint(show_chassis_fpc)
+            print "====%s get rpc now via %s..." % (curr_time(), dev)
+
+            # this is a must
+            fpc_info = dev.rpc.get_fpc_information()
+            print (etree.tostring(fpc_info))
+            dev.cli("show chassis fpc", warning=False)
+            break
+
+        except Exception:                      # {{{4}}}
+
+            # if there is any problem, call netconf to correct
+            netconf(host=re1, user='labroot',password='lab123')
+            show_chassis_fpc()
+            # print "====%s show_chassis_fpc: unexpected exceptions"
+            return
+
+    # parsing data and print messages {{{3}}}
+    # for i in fpc_info.xpath('.//link-level-type'):
+    #     print i.text
+    fpcs = fpc_info.findall("fpc")
+    # state0 = fpc_info.findtext("fpc[slot='0']/state")
+    for fpc in fpcs:
+        fpcslot = fpc.findtext("slot")
+        fpcstate = fpc.findtext("state")
+        print "fpc: %s, state: %s" % (fpcslot, fpcstate)
+
+def test_show_chassis_fpc():        # {{{2}}}
+
+    # get the name (assigned from parent process)
+    name = multiprocessing.current_process().name
+    print '====%s Run task %s, PID(%s)...' % (curr_time(), name, os.getpid())
+    start = time()
+
+    global iteration_max, dev
+    iteration = 0
+
+    while iteration < iteration_max:
+        iteration += 1
+        print "====%s #%s show_chassis_fpc iteration!" % (curr_time(), iteration)
+        show_chassis_fpc()
+
+    print "====%s #%s iterations of show_chassis_fpc done, exit!" % \
+                                        (curr_time(), iteration_max)
+
+    end = time()
+    print '====%s Task %s runs %0.2f seconds.' % (curr_time(), name, (end - start))
+
+
+def upgrade():                    # {{{2}}}
+
+    global dev, package
+    sw = SW(dev)
+    ok = sw.install(package=package, progress=myprogress)
+    # progress takes boolean values too from 1.2.3 version onwards
+    #ok = sw.install(package=package, progress=True)
+    if ok:
+        print 'rebooting'
+        sw.reboot()
+
+
+def save_cli_process(host, cli, fname=None):                 # {{{2}}}
+    '''
+    one process, to login one host
+    '''
+
+    global dev, normalize
+
+    # get the name (assigned from parent process)
+    name = multiprocessing.current_process().name
+    print '====%s Run task %s, PID(%s)...' % (curr_time(), name, os.getpid())
+    start = time()
+
+    normalize = False
+    dev = netconf(host, user, password)
+    normalize = True
+
+    if fname is None:
+        fname = "%s_%s" % (dev.hostname, curr_time())
+        fname = dev.hostname
+
+    # this only support XML format, no (method: 'text')
+    # rpc_get_config = dev.rpc.get_config()
+
+    cli_output = dev.cli(cli)
+    write_file(fname, cli_output)
+
+    end = time()
+    print '====%s Task %s runs %0.2f sec.' % (curr_time(), name, (end - start))
+
+
+def save_cli_mthread(host, cli_list, fname=None):                 # {{{2}}}
+    '''
+    multi-threading:
+    for one host, iterate cli_list with multiple threads
+    '''
+
+    global dev, normalize
+
+    # get the name (assigned from parent process)
+    name = multiprocessing.current_process().name
+    print '====%s Run task %s, PID(%s)...' % (curr_time(), name, os.getpid())
+    start = time()
+
+    normalize = False
+    dev = netconf(host, user, password)
+    normalize = True
+
+    if fname is None:
+        fname = "%s_%s" % (dev.hostname, curr_time())
+        fname = dev.hostname
+
+    # this only support XML format, no (method: 'text')
+    # rpc_get_config = dev.rpc.get_config()
+
+    threads = []
+    for cli in cli_list:
+        t = threading.Thread(
+                name=cli,
+                target=save_cli_thread,
+                args=(host, cli, fname)
+        )
+        threads.append(t)
+        t.start()
+
+    for t in threads:
+        t.join()
+
+    end = time()
+    print '====%s Task %s runs %0.2f sec.' % (curr_time(), name, (end - start))
+
+def save_cli_mprocess(host_list, cli, fname=None):              # {{{2}}}
+
+    jobs = []
+    # scan hosts via multiprocessing {{{3}}}
+    for host in host_list:
+        mylogger.debug("get a host: %s" % host)
+        process_name = "%s" % host
+
+        p = multiprocessing.Process(name=process_name,
+                                    target=save_cli_process,
+                                    args=(host, cli, fname))
+        p.daemon = True
+        jobs.append(p)
+
+    for p in jobs:
+        p.start()
+
+    for p in jobs:
+        p.join()
+
+def issu(user, password):         # {{{2}}}
+
+    global package, attempt_max, attempt, dev
+    global iteration
+
+    dev.open()
+    sw = SW(dev)
+
+    # multiple attempts for one successful issu {{{3}}}
+    while attempt <= attempt_max:
+
+        print "++++%s #%s attempt in #%s iteration!" % (curr_time(), attempt,
+                                                        iteration)
+        attempt += 1
+
+        try:                            # {{{4}}}
+
+            # import ipdb; ipdb.set_trace()  # XXX BREAKPOINT
+            # this will take long time to return
+            ok = sw.install(
+                package=package,
+                issu=True,
+                no_copy=True,
+                progress=myprogress)
+
+            # check issu result,
+            #   retry immediately if not succeed,
+            #   sleep 10m and do it again if succeed
+            print '++++%s sw.install returns Install Status %s' % (curr_time(),
+                                                                   ok)
+
+            if ok is not True:
+                print "++++%s sw.install returned False" % curr_time()
+                print "++++%s will retry in 60s" % curr_time()
+                sleep(60)
+                return issu(user, password)
+
+            else:
+
+                print '++++%s sw.install returns Install Status %s' % \
+                                                    (curr_time(), ok)
+                print '++++%s ISSU succeeded!' % curr_time()
+                return True
+
+        except Exception as ex:         # {{{4}}}
+
+            # if an issu is already in progress, wait 2m and attempt
+            # again for other issues, exit
+            print "++++%s exception: message: %s, repr: %s, type: %s" % \
+                        (curr_time(), ex.message, repr(ex), type(ex))
+
+            # ConnectClosedError {{{5}}}
+            if isinstance(ex, ConnectClosedError):
+                # recurse issu if connection closed, say, due to
+                # previous issu.
+
+                dev.close()
+                sleep(10)
+                print "++++%s ConnectClosedError, will reconnect ..." % \
+                                                            curr_time()
+                dev = netconf(re0, user, password)
+                return issu(user, password)
+
+            # RpcError {{{5}}}
+            elif isinstance(ex, RpcError):
+                # ISSU in Progress {{{6}}}
+                if ex.message == 'ISSU in progress':
+                    print "++++%s sleeping 60s and retry..." % curr_time()
+                    sleep(60)
+                    return issu(user, password)
+
+                # RE not master (unlikely) {{{6}}}
+                elif ex.message == 'RE not master':
+                    print "++++%s do ISSU on other re then ..." % curr_time()
+                    if host == 're0':
+                        host = 're1'
+                    else:
+                        host = 're0'
+                    dev.close()
+                    sleep(10)
+                    dev = netconf(host, user ,password)
+                    return issu(user, password)
+
+                # ISSU aborted {{{6}}}
+                elif ex.message == 'ISSU Aborted!' or \
+                     "'Graceful Switchover' not operational'" not in ex.message:
+
+                    #error: 'Graceful Switchover' not operational
+                    print "++++%s ISSU aborted, mostly another one is onging..." \
+                                                                    % curr_time()
+                    print "retry after 10s..."
+                    sleep(10)
+                    return issu(user, password)
+
+                else:                   # {{{6}}}
+                    print "++++%s unprocessed exception, exit..." % curr_time()
+                    sys.exit()
+
+            else:                       # {{{5}}}
+
+                print "++++%s unprocessed exception, exit..." % curr_time()
+                print "++++%s exception: message: %s, repr: %s, type: %s" \
+                    % (curr_time(), ex.message, repr(ex), type(ex))
+                sys.exit()
+    else:
+        print "++++%s no success after %s attempt, exit issu..." % (curr_time(),
+                                                                    attempt_max)
+
+
+def test_issu(user, password):              # {{{2}}}
+
+    # get the name (assigned from parent process)
+    name = multiprocessing.current_process().name
+    print '++++%s Run task %s, PID(%s)...' % (curr_time(), name, os.getpid())
+    start = time()
+
+    global iteration_max, dev
+
+    while iteration < iteration_max:
+        iteration += 1
+        print "++++%s #%s ISSU iteration!" % (curr_time(), iteration)
+        issu(user, password)
+
+    print "++++%s %s iterations of ISSU done, exit!" % (curr_time(), iteration_max)
+
+    end = time()
+    print '++++%s Task %s runs %0.2f seconds.' % (curr_time(), name, (end - start))
+
+# general functions {{{1}}}
+
+
+def myprogress(dev, report):            # {{{2}}}
+    print "++++%s host %s ISSU progress: %s" % (curr_time(), dev.hostname,
+                                                  report)
+
+def curr_time():                                # {{{2}}}
+    return '{:%Y_%m_%d_%H_%M_%S}'.format(datetime.datetime.now())
+
+
+def write_file(fname, string, flag='a'):          # {{{2}}}
+
+    action = {}
+    action['a'] = "append"
+    action['w'] = "write"
+    try:
+        with open(fname, flag) as f:
+            # mylogger.debug("write output of cli '%s' to file '%s'" % \
+            #                                           (cli, fname))
+            mylogger.debug("%s to file %s" % (action[flag], fname))
+            f.write(string)
+    except Exception as e:
+        mylogger.debug("file %s ERROR: %s" % (action[flag], fname))
+        mylogger.debug(e)
+
+
+def logger(terse=False):                           # {{{2}}}
+    '''
+    configure and define a logger
+    '''
+
+    # logging.basicConfig(level=logging.DEBUG)
+
+    # http://www.jianshu.com/p/feb86c06c4f4
+    # create logger {{{3}}}
+
+    # create "verbose" level {{{3}}}
+    # lower (more verbose) than debug
+    # http://stackoverflow.com/questions/2183233/how-to-add-a-custom-loglevel-to-pythons-logging-facility
+    logging.VERBOSE = 9
+    logging.addLevelName(logging.VERBOSE, "VERBOSE")
+    def verbose(self, message, *args, **kws):
+        # Yes, logger takes its '*args' as 'args'.
+        if self.isEnabledFor(logging.VERBOSE):
+            self._log(logging.VERBOSE, message, args, **kws)
+    logging.Logger.verbose = verbose
+
+    if terse:
+        root = multiprocessing.get_logger()
+        for handler in root.handlers[:]:
+            root.removeHandler(handler)
+        mylogger = multiprocessing.get_logger()
+        multiprocessing.log_to_stderr()
+
+    else:
+        # this is to workaround issue in ipython
+        # delete loghandlers from last run, before adding new one
+        logger_name = "mylogger"
+        root = logging.getLogger(logger_name)
+        root = multiprocessing.get_logger()
+        for handler in root.handlers[:]:
+            root.removeHandler(handler)
+
+        mylogger = logging.getLogger(logger_name)
+
+        # optional configs: handler/formatter
+        # create file/stream handler {{{3}}}
+        log_path = "./pypuller.log"
+        fh = logging.FileHandler(log_path)
+        fh.setLevel(logging.VERBOSE)
+        sh = logging.StreamHandler()
+        sh.setLevel(logging.VERBOSE)
+
+        # create formatter {{{3}}}
+        fmt = "%(asctime)-15s %(levelname)s %(filename)s %(lineno)d %(process)d %(message)s"
+        # fmt = "%(asctime)-15s %(levelname)s (PID %(process)d) (LINE:%(message)s"
+        datefmt = "%a %d %b %Y %H:%M:%S"
+        formatter = logging.Formatter(fmt, datefmt)
+
+        # add handler and formatter to logger
+        fh.setFormatter(formatter)
+        sh.setFormatter(formatter)
+        mylogger.addHandler(fh)
+        mylogger.addHandler(sh)
+    return mylogger
+
+    # logger usage{{{3}}}
+    # mylogger.debug('debug message')
+    # mylogger.info('info message')
+    # mylogger.warn('warn message')
+    # mylogger.error('error message')
+    # mylogger.critical('critical message')
+
+    # expect result:
+    # In [197]: cat pypuller.log
+    # Tue 07 Feb 2017 17:20:02 WARNING <stdin> 1 8724 warn message
+    # Tue 07 Feb 2017 17:20:02 ERROR <stdin> 1 8724 error message
+    # Tue 07 Feb 2017 17:20:03 CRITICAL <stdin> 1 8724 critical message
+
+def git_submit():                       # {{{1}}}
+
+    global options
+    log_dir = options['log_dir']
+
+    mylogger.info('commit the new data')
+
+    git_diff = "git diff"
+    proc = subprocess.Popen(
+            git_diff,
+            shell  = True,
+            cwd    = log_dir,
+            stdin  = subprocess.PIPE,
+            stdout = subprocess.PIPE,
+    )
+    # 'press a q' to terminate git diff - this doesn't seem to work well
+    # proc.communicate('q')
+    # proc.stdin.write('q')
+
+    # this is a must - to resolve the sane terminal after Popen
+    # this looks sth to do with the 'less' run by git diff, which could not be
+    # terminated properly otherwise
+    # http://stackoverflow.com/questions/6488275/terminal-text-becomes-invisible-after-terminating-subprocess
+    proc.wait()
+
+    git_add  = "git add -A ."
+    subprocess.Popen(git_add  , shell=True , cwd=log_dir)
+
+    git_cm   = "git commit -am 'new commit'"
+    subprocess.Popen(git_cm   , shell=True , cwd=log_dir)
+
+    git_st   = "git status"
+    proc = subprocess.Popen(git_st   , shell=True , cwd=log_dir)
+
+    # proc.send_signal(signal.SIGINT)
+
+# connections {{{1}}}
+
+def netconf(hostname, user, password, attempt_max=10, normalize=True):  # {{{2}}}
+    '''
+    connect to hostname via netconf over ssh
+    return dev if succeed
+    return None on 'ConnectAuthError' error
+    retry attempt_max time on other errors
+    '''
+
+    for attempt in range(1, attempt_max):
+
+        mylogger.debug("attempting netconf(%s/%s)!" % (attempt, attempt_max))
+
+        # * succeed: return dev
+        # * known fail: return None
+        #   - ConnectAuthError
+        # * raise Exception: return None
+        #   - ConnectNotMasterError
+        # * others: return None
+        #   - ConnectTimeoutError
+        #   - ConnectClosedError
+        try:                            # {{{3}}}
+            # Device {{{4}}}
+            # using 'with' , no need to open()...  but, when leaving the func,
+            # dev will be closed...
+            # with Device(host=hostname, user=user, password=password,
+            #             normalize=normalize) \
+            #        as dev:
+            # disable gather_facts, to make it faster
+            # enable normalize, to remove the trailing/extra new lines
+            # enable auto_probe, to detect connection issue faster?
+            dev = Device(host=hostname, user=user, password=password,
+                         gather_facts=False, normalize=normalize, auto_probe=5)
+            dev.open()
+
+            # flag the connection as 'netconf'
+            dev.protocol = 'netconf'
+
+            # when needed, gather/refresh facts later
+            # raise exceptions on error
+            # dev.facts_refresh(exception_on_failure=True)
+
+            ## looks no need then
+            # pprint(dev.facts)
+            # hostname      = dev.facts['hostname']
+            # version       = dev.facts['version']
+            # model         = dev.facts['model']
+            # serialnumber  = dev.facts['serialnumber']
+            # re0mastership = dev.facts['RE0']['mastership_state']
+            # re1mastership = dev.facts['RE1']['mastership_state']
+
+            # print "%s (%s:%s) running %s" % \
+            #    (hostname, model, serialnumber, version)
+
+            # if dev.facts['2RE']:    # {{{5}}}
+            #     if host == re0:
+
+            #         if re0mastership == 'master':
+            #             print "RE0 is master, will do issu!"
+            #             return dev
+            #         else:
+            #             print "RE0 is not master, go RE1!"
+            #             dev.close()
+            #             return netconf(host=re1, user='labroot',
+            #                                  password='lab123')
+
+            #     else:
+
+            #         if re1mastership == 'master':
+            #             print "RE1 is master, will do issu!"
+            #             return dev
+            #         else:
+            #             print "RE1 is not master, go RE0!"
+            #             dev.close()
+            #             return netconf(host=re0, user='labroot',
+            #                                  password='lab123')
+
+            # else:                   # 1 RE {{{5}}}
+            #     print "only 1 RE!"
+            #     sys.exit()
+            mylogger.info("%s connected!" % hostname)
+            return dev
+
+        except ConnectAuthError:        # {{{3}}}
+            mylogger.warning(
+                    "%s:ConnectAuthError, check the user name and password!"
+                    % hostname)
+            return None
+
+        except ConnectRefusedError:     # {{{3}}}
+
+            mylogger.warn("%s:ConnectRefusedError, check the host config!"
+                    % hostname)
+            return None
+
+        except ConnectNotMasterError:   # {{{3}}}
+
+            raise
+            return None
+
+        except ConnectTimeoutError:     # {{{3}}}
+            mylogger.warn("%s:ConnectTimeOutError, will reconnect afer 10s..."
+                           % hostname)
+            sleep(10)
+            # return netconf(hostname, user=user, password=password)
+
+        except ConnectClosedError:      # {{{3}}}
+            mylogger.warn("%s:ConnectClosedError, will reconnect afer 10s..."
+                    % hostname)
+            sleep(10)
+            # dev = netconf(hostname, user, password)
+
+        except ProbeError:      # {{{3}}}
+            mylogger.warning(
+                    "%s:ProbeError, check netconf connectivity!" % hostname)
+            return None
+
+        except Exception as e:                         # {{{3}}}
+            print e
+            mylogger.warn("%s:unexpected error: %s" % \
+                          (hostname, sys.exc_info()[0]))
+            sleep(10)
+
+    else:
+        # attempt_max done, still not clear return 
+        return None
+
+def ssh(hostname, user, password, port=22):  # {{{2}}}
+
+    mylogger.debug("attempting ssh to %s!" % hostname)
+    # import ipdb; ipdb.set_trace()  # XXX BREAKPOINT
+    paramiko.util.log_to_file('./pypuller_ssh.log')
+    s = paramiko.SSHClient()
+    s.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    s.load_system_host_keys()
+    s.connect(hostname, port, user, password)
+    # stdin, stdout, stderr = s.exec_command('uptime')
+    dev = s
+    dev.protocol = 'ssh'
+    dev.hostname = hostname
+    return dev
+
+    # paramiko.util.log_to_file('paramiko.log')
+    # s = paramiko.SSHClient()
+    # s.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # s.load_system_host_keys()
+    # s.connect(hostname, port, username, password)
+    # # stdin, stdout, stderr = s.exec_command('show version')
+    # stdin, stdout, stderr = s.exec_command(command)
+    # print stdout.read()
+    # # s.close()
+
+
+def connection(host):  # {{{2}}}
+    '''
+    TODO: handle all connections:
+    * netconf
+    * ssh
+    * others
+    '''
+
+    # TODO: get all attributes according to hostname
+    final       = getfinal(host, options)
+    mylogger.verbose("%s's final looks:\n%s" % (host, pprint.pformat(final)))
+
+    hostname    = final['hostname']
+    user        = final['user']
+    password    = final['password']
+    attempt_max = final['attempt_max']
+    port        = final['port']
+    re0         = final['re0']
+    re1         = final['re1']
+    protocol    = final['protocol']
+    normalize   = final['normalize']
+
+    dev = None
+    try:
+	mylogger.info("connecting to %s ..." % host)
+	mylogger.debug("protocol looks %s ..." % protocol)
+
+        if protocol == 'netconf':
+            mylogger.verbose("connecting via netconf")
+            # dev = netconf(hostname, user, password, attempt_max, normalize)
+            dev = netconf(hostname=hostname, user=user, password=password,
+                          attempt_max=attempt_max, normalize=normalize)
+
+        elif protocol == 'ssh':
+            mylogger.verbose("connecting via ssh")
+            dev = ssh(hostname, user, password, port)
+
+        elif protocol == 'smart':
+            mylogger.debug("will attempt with netconf and ssh if failed ...")
+            mylogger.debug("attempting with netconf ...")
+            dev = netconf(hostname=hostname, user=user, password=password,
+                          attempt_max=attempt_max, normalize=normalize)
+            if dev is None:
+                mylogger.debug("attempting with netconf failed...")
+                mylogger.debug("attempting ssh ...")
+                dev = ssh(hostname, user, password, port)
+
+        else:
+            mylogger.info("non-supported protocol %s ..." % protocol)
+            pass
+
+    # TODO: add more error proessing
+    # except AuthenticationException:                 # {{{3}}}
+    # except socket.error:                 # {{{3}}}
+
+    except ConnectNotMasterError:                   # {{{3}}}
+        # if got a "raised" Exception from netconf process, process it here
+
+        if re0 and re1:
+            mylogger.info("ConnectNotMasterError, connect to the other RE...")
+            if host == re0:
+
+                mylogger.info(" (since current RE0 is not master, go RE1...)")
+                dev = netconf(re1, user, password, attempt_max)
+
+            else:
+
+                mylogger.info(" (since current RE1 is not master, go RE0...)")
+                dev = netconf(re0, user, password, attempt_max)
+        else:
+            mylogger.info("ConnectNotMasterError, other RE info N/A...")
+
+    except Exception as e:                          # {{{3}}}
+        print e
+        mylogger.warn("%s:unexpected error: %s" % \
+                      (hostname, sys.exc_info()[0]))
+
+    finally:                                        # {{{3}}}
+
+        # don't do anything if connection failed
+        if dev is None:
+            mylogger.info("%s login failed", host)
+        return dev
+
+
+# process/thread funcs {{{1}}}
+def save_cli_thread(dev, host, cli, fname=None):                 # {{{2}}}
+
+    '''
+    one thread: 
+    * only send one cli to a host
+    * write the output to a file
+    '''
+
+    # get the name (assigned from parent process)
+    name = threading.currentThread().getName()
+    mylogger.info('--->thread "%s" started, PID(%s)...' % \
+                    (name, os.getpid())
+    )
+    start = time()
+
+    if dev.protocol == 'netconf':
+
+        # this only support XML format, no (method: 'text')
+        # rpc_get_config = dev.rpc.get_config()
+
+        # print "get a cli '%s'" % cli
+        cli_output = dev.cli(cli, warning=False)
+
+    elif dev.protocol == 'ssh':
+
+        stdin, stdout, stderr = dev.exec_command(cli)
+        cli_output = stdout.read()
+
+    mylogger.verbose("output of cli '%s' looks:\n%s" % (cli, cli_output))
+    write_file(fname, cli_output)
+
+    end = time()
+    mylogger.info('<---thread %s exited (%0.2f sec).' % \
+                    (name, (end - start))
+    )
+
+
+def save_cli_process_mthread(options, host, fname=None): # {{{2}}}
+    '''
+    one process, to login one host
+    then multi-threading, each for a cli
+    '''
+
+    # global dev
+
+    ## this message is not accurate now when running from subclass
+    ## p.start -> Worker.run -> Task.call -> save_cli_process_mthread
+    ##  |<--process start at this time
+    ##
+    ## get the name (assigned from parent process)
+    # name = multiprocessing.current_process().name
+    # mylogger.info('===>Process %s PID(%s) started...' % (name, os.getpid()))
+    # start = time()
+
+    final = getfinal(host, options)
+    cli_list = final.get('cli_list')
+
+    # connecting {{{3}}}
+    dev = connection(host)
+
+    # record result {{{3}}}
+    result                  = {}
+    result['scanned']       = host
+    result['connected']     = None
+    result['failed']        = None
+    if dev is not None:
+        result['connected'] = host
+    else:
+        result['failed']    = host
+
+    if dev is not None:
+        # log file name {{{3}}}
+        # check if filename is given, use host name as default
+        if fname is None:
+            fname = "%s_%s" % (dev.hostname, curr_time())
+            fname = dev.hostname
+            fname_full = options['log_dir'] + '/' + fname
+        else:
+            fname_full = fname
+
+        mylogger.verbose("log file full path looks:" + fname_full)
+
+        # delete existing file before writing new contents
+        if os.path.isfile(fname_full):
+            os.remove(fname_full)
+
+        # threading {{{3}}}
+        threads = []
+        # print '[%s]' % ', '.join(map(str, cli_list))
+        for cli in cli_list:
+            # print "get a cli", cli
+            t = threading.Thread(
+                    name='"' + cli + '"',
+                    target=save_cli_thread,
+                    args=(dev, host, cli, fname_full)
+            )
+            threads.append(t)
+            t.start()
+
+        for t in threads:
+            t.join()
+
+        # end = time()
+        # mylogger.info('<===Process %s exited (%0.2f sec).' % \
+        #                 (name, (end - start))
+        # )
+    return result
+
+
+def save_cli_mprocess_mthread(options, fname=None): # {{{2}}}
+
+    host_list = options['host_list']
+    cli_list  = options['cli_list']
+
+    jobs = []
+    # scan hosts via multiprocessing {{{3}}}
+    for host in host_list:
+        mylogger.debug("get a host: %s" % host)
+        process_name = host
+
+        # print '[%s]' % ', '.join(map(str, cli_list))
+        p = multiprocessing.Process(name=process_name,
+                                    target=save_cli_process_mthread,
+                                    args=(options, host, fname))
+        p.daemon = True
+        jobs.append(p)
+
+    for p in jobs:
+        p.start()
+
+    for p in jobs:
+        p.join()
+
+def getfinal(host, options):  # {{{1}}}
+    '''
+    parse options, and get the final parameter based on hostname
+    '''
+    final = {}
+
+    for key in options:
+        final[key] = options.get(key)
+    final.pop('host', None)
+
+    # from options, looking for host info configured in yaml
+    # if yaml has a section for any individual host configs
+    if options.get('host', {}):
+        # check if current host is configured in yaml host section
+        host_indiv = options['host'].get(host, [])
+
+        # if it is, extract the info
+        if host_indiv:
+            for key in host_indiv[0]:
+                if not host_indiv[0].get(key, None):
+                    final[key] = host_indiv[0].get(key)
+
+            # access info {{{2}}}
+            if final.get('access', None) is not None:
+                for key in final['access']:
+                    if final['access'].get(key, None) is not None:
+                        final[key] = final['access'].get(key)
+                final.pop('access', None)
+                
+            # cli_list {{{2}}}
+            if len(host_indiv) > 1:
+                final['cli_list'] = host_indiv[1].get('clies', options['cli_list'])
+                # if not final['cli_list']:
+                #     final['cli_list'] = options['cli_list']
+            else:
+                final['cli_list'] = options['cli_list']
+
+    if not final.get('hostname', None):
+        final['hostname'] = host
+
+    return final
+
+def args_def(options): # {{{1}}}
+    '''
+    define the CLI arguments
+    '''
+
+    parser = argparse.ArgumentParser(prog='pypuller', 
+             description='A script to pull CLI info from devices(hosts).')
+
+    # login: -u/-p {{{2}}}
+    login_group = parser.add_argument_group('login info')
+
+    login_group.add_argument('-u', action='store',
+                        dest='user',
+                        help='user name')
+
+    login_group.add_argument('-p', action='store',
+                        dest='password',
+                        help='password')
+
+    # router/cli info: -R/-C/-r/-c {{{2}}}
+    rtrcli_group = parser.add_argument_group('router/cli info')
+
+    rtrcli_group.add_argument('-R', action='store',
+                        dest='host_file',
+                        help="a file that has list of hosts")
+
+    rtrcli_group.add_argument('-C', action='store',
+                        dest='cli_file',
+                        help='a file that has list of CLIes')
+
+    rtrcli_group.add_argument('-r', action='append',
+                        dest='host_list',
+                        default=[],
+                        help='Add hosts to a host_list(can repeat)')
+
+    rtrcli_group.add_argument('-c', action='append',
+                        dest='cli_list',
+                        default=[],
+                        help='Add CLIes to a cli_list(can repeat)')
+
+    # verbosity: -d/-t: {{{2}}} 
+    verb_group = parser.add_argument_group('verbosity')
+    me_group = verb_group.add_mutually_exclusive_group()
+
+    me_group.add_argument('-d', action='count',
+                        default=0,
+                        dest='debug',
+                        help='increase debug verbosity, -dd for even more info')
+
+    me_group.add_argument('-t', '--terse', action='store_true',
+                        default=False,
+                        dest='terse',
+                        help='decrease verbosity')
+
+    other_group = parser.add_argument_group('other optional arguments')
+
+    # -n/--processes {{{2}}}
+    other_group.add_argument('-n', 
+                        dest='processes',
+                        help='number of concurrent processes, e.g. 3, \
+                            p3(default), 0')
+
+    # -P/--protocol {{{2}}}
+    other_group.add_argument('-P', action='store',
+                        dest='protocol',
+                        help='protocol (netconf, ssh)')
+
+    # -l/--log_dir {{{2}}}
+    other_group.add_argument('-l', action='store',
+                        dest='log_dir',
+                        help='log dir')
+
+    # -y/--yaml_file {{{2}}}
+    other_group.add_argument('-y', action='store_true',
+                        dest='yaml_file',
+                        default=False,
+                        help='yaml_file, use "NONE" to suppress')
+
+    # -g/--commit {{{2}}}
+    other_group.add_argument('-g', action='store_true',
+                        default=False,
+                        dest='commit',
+                        help='commit to repo (via git)')
+
+    # -v/--version {{{2}}}
+    other_group.add_argument('-v', '--version', action='version',
+                        version='%(prog)s 1.1')
+
+    # # turn all options into args {{{2}}}
+    # # not tested yet
+    # misc_group = parser.add_argument_group('misc')
+    # for key in options:
+    #     flag = "--" + key
+    #     misc_group.add_argument(flag, action='store',
+    #                         dest=key,
+    #                         help='options')
+
+    args = parser.parse_args()
+    return args
+
+def args_process(args, options): # {{{1}}}
+    '''
+    process CLI args, and save in options
+    '''
+
+    # debug, -d {{{2}}}
+    if not args.debug:
+        mylogger.setLevel(logging.INFO)
+    elif args.debug == 1:
+        options['debug'] = args.debug
+        mylogger.setLevel(logging.DEBUG)
+    elif args.debug > 1:
+        options['debug'] = args.debug
+        mylogger.setLevel(logging.VERBOSE)
+
+    mylogger.debug('command line options read:')
+    mylogger.debug('debug = %r' % args.debug)
+    mylogger.debug('user = %r' % args.user)
+    mylogger.debug('password = %r' % args.password)
+    mylogger.debug('host_file = %r' % args.host_file)
+    mylogger.debug('cli_file = %r' % args.cli_file)
+    mylogger.debug('log_dir = %r' % args.log_dir)
+    mylogger.debug('host_list = %r' % args.host_list)
+    mylogger.debug('cli_list = %r' % args.cli_list)
+    mylogger.debug('commit = %r' % args.commit)
+    mylogger.debug('yaml_file = %r' % args.yaml_file)
+
+    # protocol -P {{{2}}}
+    if args.protocol is not None:
+        options['protocol'] = args.protocol
+    options['port'] = 830 if options['protocol'] == 'netconf' else 22
+
+    # read host/cli_file, -R/-C {{{2}}}
+    # 'is not None:' is different than "if xx:"
+    # 'is not None' means either:
+    # * has a real value
+    # * being empty
+    if args.host_file is not None:
+        options['host_file'] = args.host_file
+
+    if args.cli_file is not None:
+        options['cli_file'] = args.cli_file
+
+    if os.path.isfile(options['host_file']):
+        try:
+            with open(options['host_file'], 'r') as f:
+                for line in f:
+                    if options['force_hfile']:
+                        # read commented host, ignoring(removing) comment('#')
+                        if not re.sub('#', '', line).strip == '':
+                            options['host_list'].append(line.strip())
+                    else:
+                        # respect comment, skip commented host
+                        if not line.strip().startswith('#') and \
+                           not line.strip() == '':
+                            options['host_list'].append(line.strip())
+        except Exception as e:
+            print "file open ERROR:", options['host_file']
+            print e
+
+    if os.path.isfile(options['cli_file']):
+        try:
+            with open(options['cli_file'], 'r') as f:
+                for line in f:
+                    if options['force_hfile']:
+                        # read commented host, ignoring(removing) comment('#')
+                        if not re.sub('#', '', line).strip == '':
+                            options['cli_list'].append(line.strip())
+                    else:
+                        # respect comment, skip commented host
+                        if not line.strip().startswith('#') and \
+                           not line.strip() == '':
+                            options['cli_list'].append(line.strip())
+        except Exception as e:
+            print "file open ERROR", options['cli_file']
+            print e
+
+    mylogger.verbose("host_list read from %s:\n%s" % \
+            (options['host_file'], pprint.pformat(options['host_list'])))
+    mylogger.verbose("cli_list read from %s:\n%s" % \
+            (options['cli_file'], pprint.pformat(options['cli_list'])))
+
+    # yaml_file, -y {{{2}}}
+
+    # if -y specified, use ./pypuller.yaml file under same folder
+    if args.yaml_file:
+        options['yaml_file'] = './pypuller.yaml'
+        # use a "special" string "NONE" to ignore the yaml file
+
+    if options['yaml_file'] and os.path.isfile(options['yaml_file']):
+        mylogger.debug("yaml_file %s found!" % options['yaml_file'])
+
+        fyaml      = file(options['yaml_file'], 'r')
+        pyaml      = yaml.load_all(fyaml)
+        pyaml_list = list(pyaml)
+
+        mylogger.verbose("the yaml data looks:\n%s" %
+                         pprint.pformat(pyaml_list))
+
+        # y0: first yaml "document" {{{3}}}
+        y0 = pyaml_list[0]
+        mylogger.verbose("parameters defined in y0 looks:\n%s" %
+                         pprint.pformat(y0))
+        for item in y0.items():
+            options[item[0]] = item[1]
+        mylogger.verbose("options looks after reading from 1st yaml doc:\n%s" %
+                         pprint.pformat(options))
+
+        # y1: 2nd yaml "document" {{{3}}}
+        # 2nd document of yaml contains 
+        # * all individual host config
+        # * hosts and clies list
+        y1              = pyaml_list[1]
+        # individual hosts
+        y1_hosts        = [a for a in y1 if a not in ['hosts', 'clies']]
+        # add a 'host' entry to hold all individual hosts defined in yaml
+        options['host'] = {}
+        for host in y1_hosts:
+            # check if parameters are present,
+            # if not, set using general params
+            # TODO
+            options['host'][host] = y1[host]
+        # use 'if:' vs. if 'is not None:', ensures hosts/clies not only
+        # configured(not "None"), but not anything empty (shows "True")
+        if pyaml_list[1].get('hosts', None):
+            options['host_list'] = y1_hosts + y1['hosts']
+        if pyaml_list[1].get('clies', None):
+            options['cli_list']  = y1['clies']
+
+        mylogger.verbose(
+                "host_list after read from %s:\n%s" %
+                (
+                    options['yaml_file'],
+                    pprint.pformat(options['host_list'])
+                )
+        )
+
+    else:
+        mylogger.debug("no yaml_file found or skipped by 'NONE'!")
+
+    mylogger.verbose(
+            "cli_list after read from %s:\n%s" %
+            (options['yaml_file'], pprint.pformat(options['cli_list']))
+    )
+
+    # user/password, -u/-p {{{2}}}
+    if args.user is not None:
+        options['user'] = args.user
+
+    if args.password is not None:
+        options['password'] = args.password
+
+    # log_dir, -l {{{2}}}
+    if args.log_dir is not None:
+        options['log_dir'] = args.log_dir
+    if not os.path.exists(options['log_dir']):
+        os.makedirs(options['log_dir'])
+
+    # commit, -g {{{2}}}
+    if args.commit is not None:
+        options['commit'] = args.commit
+
+    # host/cli_list, -r/-c {{{2}}}
+    if args.host_list:
+        options['host_list'] = args.host_list
+
+    if args.cli_list:
+        options['cli_list'] = args.cli_list
+
+    mylogger.verbose("final host_list:\n%s" %
+                     pprint.pformat(options['host_list']))
+    mylogger.verbose("final cli_list:\n%s" %
+                     pprint.pformat(options['cli_list']))
+
+    # processes -n {{{2}}}
+    # TODO: -n 3, -n p3 (default), -n 0
+    # use regex to parse px?
+    # no need to check if arg is given, since it has its default 0
+
+    if options['processes'] > len(options['host_list']):
+        options['processes'] = len(options['host_list'])
+
+    if args.processes is not None:
+        r = re.match('(\d)(c?)', args.processes)
+        if r:
+            if r.group(2):
+                # -n 3c
+                options['processes'] = multiprocessing.cpu_count() * \
+                                       int(r.group(1))
+            else:
+                # -n 3
+                options['processes'] = r.group(1)
+        else:
+            mylogger.warn('wrong -n spec, use default')
+            
+    mylogger.verbose("after processing command line args options looks:\n%s" %
+                     pprint.pformat(options))
+
+    return options
+
+
+class Worker(multiprocessing.Process): # {{{1}}}
+
+    def __init__(self, task_queue, result_queue):       # {{{2}}}
+        mylogger.verbose("initiating a Worker...")
+        multiprocessing.Process.__init__(self)
+        self.task_queue = task_queue
+        self.result_queue = result_queue
+
+    def run(self):                                      # {{{2}}}
+        # "run" will be called automatically when process "start" (w.start)
+        # https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Process.start
+
+
+        proc_name = self.name
+        mylogger.debug(proc_name + ' get started (in "run")...')
+        # name = multiprocessing.current_process().name
+        mylogger.info('===>Process %s PID(%s) started...' %
+                      (proc_name, os.getpid()))
+        start = time()
+
+        while True:
+            mylogger.debug(proc_name + " try to get a task...")
+            next_task = self.task_queue.get()
+            mylogger.debug('%s:got a (next) task:%s from tasks queue' %
+                            (proc_name, next_task))
+            if next_task is None:
+                # Poison pill means shutdown
+                mylogger.debug('%s: got a None task, Exiting' % proc_name)
+                self.task_queue.task_done()
+                break
+            mylogger.debug('%s: object (Task) call to get it executed' %
+                            proc_name)
+
+            # do the real work, call Task.__call__()
+            result = next_task()
+
+            # mark task done
+            self.task_queue.task_done()
+
+            if result is not None:
+                self.result_queue.put(result)
+
+        end = time()
+        mylogger.info('<===Process %s exited (%0.2f sec).' %
+                      (proc_name, (end - start)))
+
+        return
+
+
+class Task(object):  # {{{1}}}
+
+    def __init__(self, options, host):  # {{{2}}}
+        self.options = options
+        self.host = host
+        mylogger.debug('Task init: %s ...' % (self.host))
+
+    def __call__(self):                 # {{{2}}}
+
+        mylogger.debug('task called to be executed:%s ...' % (self.host))
+
+        # try to connect to device and send commands
+        result = save_cli_process_mthread(options, self.host, fname=None)
+        return result
+
+        
+
+    def __str__(self):                  # {{{2}}}
+        return '%s' % (self.host)
+
+
+def main():                     # {{{1}}}
+
+    global options
+    global mylogger
+    # import ipdb; ipdb.set_trace()  # XXX BREAKPOINT
+
+    # enable logging to send multiprocessing log messages to stderr
+    # this works
+    # multiprocessing.log_to_stderr(logging.DEBUG)
+
+    ## same as above
+    # this doesn't work
+    #    No handlers could be found for logger "multiprocessing"
+    # logger = multiprocessing.get_logger()
+    # logger.setLevel(logging.DEBUG)
+
+    if 0:   # apply_async (not working) {{{2}}}
+
+        dev = netconf(host, user, password)
+
+        p = Pool()
+
+        # test issu {{{3}}}
+        print ">>>%s one process to test_issu ..." % curr_time()
+        test_issu_result = p.apply_async(test_issu, args=(user, password,))
+        test_issu_result.get()
+
+        # send command {{{3}}}
+        print ">>>%s one process to show command ..." % curr_time()
+        show_chassis_fpc_result = p.apply_async(show_chassis_fpc,
+                                                args=(user, password,))
+        show_chassis_fpc_result.get()
+
+        p.apply_async(long_time_task, args=(1,))
+
+        print '>>>%s Waiting for all subprocesses done...' % curr_time()
+        p.close()
+        p.join()
+
+    if 0:   # Process {{{2}}}
+
+        jobs = []
+        # connect to master RE {{{3}}}
+        normalize = False
+        dev = netconf(host, user, password)
+        dev.open()
+
+        # test issu {{{3}}}
+        # print ">>>%s one process to test_issu ..." % curr_time()
+        # p = multiprocessing.Process(name='test_issu', target=test_issu,
+        #                             args=(user, password,))
+        # p.daemon = True
+        # jobs.append(p)
+
+        # send XML command {{{3}}}
+        print ">>>%s one process to show command ..." % curr_time()
+        p = multiprocessing.Process(name='test_show_chassis_fpc',
+                                    target=test_show_chassis_fpc, args=())
+        p.daemon = True
+        jobs.append(p)
+
+        # send shell command {{{3}}}
+        print ">>>%s one process to collect rsi..." % curr_time()
+        p = multiprocessing.Process(name='rsi', target=rsi, args=())
+        p.daemon = True
+        jobs.append(p)
+
+        for p in jobs:
+            p.start()
+
+        for p in jobs:
+            p.join()
+
+    if 1:   # scanning hosts: mp+mt{{{2}}}
+
+        # define CLI args {{{3}}}
+        args = args_def(options)
+
+        # generate logger {{{3}}}
+        mylogger = logger(args.terse)
+        name = multiprocessing.current_process().name
+        mylogger.info('====Parent process %s started, PID(%s)...' % \
+                        (name, os.getpid())
+        )
+        start = time()
+
+        # save CLI arguments into options {{{3}}}
+        options = args_process(args, options)
+
+        # scan hosts and save
+        # save_cli_mprocess_mthread(options)
+
+        # create tasks/results queues {{{3}}}
+        mylogger.debug("create a Queue as tasks queue")
+        tasks = multiprocessing.JoinableQueue()
+        mylogger.debug("create a Queue as results queue")
+        results = multiprocessing.Queue()
+
+        # start worker processes {{{3}}}
+        num_workers = options['processes']
+        mylogger.debug("create %s workers" % num_workers)
+        workers = [Worker(tasks, results) for i in xrange(num_workers)]
+        mylogger.verbose("list of workers looks %s" % pprint.pformat(workers))
+
+        mylogger.debug("start all %s workers, 1s interval" % num_workers)
+        for w in workers:
+            w.start()
+
+        # mylogger.debug("wait 5s before put tasks")
+        # sleep(5)
+
+        # Enqueue tasks {{{3}}}
+        host_list = options['host_list']
+        cli_list  = options['cli_list']
+        for host in host_list:
+            mylogger.debug("get a host: %s, put in tasks queue..." % host)
+            process_name = host
+            tasks.put(Task(options, host))
+
+        # mylogger.debug("wait 5s before put poison tasks")
+        # sleep(5)
+
+        # enqueue poison pill for each worker {{{3}}}
+        # sleep(20)
+        mylogger.debug("put %s poison tasks" % num_workers)
+        for i in xrange(num_workers):
+            tasks.put(None)
+
+        # Wait for all the tasks to finish
+        mylogger.debug("tasks.join")
+        tasks.join()
+
+        # printing results {{{3}}}
+        results_stat = {"scanned": [], "connected": [], "failed": []}
+        while True:
+            if results.empty():
+                break
+            else:
+                result=results.get()
+                for k,v in result.iteritems():
+                    if v is not None:
+                        results_stat[k].append(v)
+
+        # save results to a file {{{3}}}
+        host_file_pypuller = options['host_file'] + '.result'
+        mylogger.info("hosts scan result saved to: %s" % host_file_pypuller)
+        # copyfile(options['host_file'], host_file_bak)
+        # open(filename, 'w').close()
+        write_file(host_file_pypuller, "", 'w')
+        write_file(host_file_pypuller, "\n# connected\n")
+        write_file(host_file_pypuller, "\n".join(results_stat["connected"]))
+        write_file(host_file_pypuller, "\n# failed\n")
+        write_file(host_file_pypuller, 
+                   "\n".join(["# %s" % host for host in results_stat["failed"]])
+                  )
+
+        mylogger.warn("hosts scan result statistics:\n %s" %
+                        pprint.pformat(results_stat))
+
+        # commit into repo {{{3}}}
+        if options['commit']:
+            git_submit()
+
+        end = time()
+        mylogger.info('====Task %s runs %0.2f seconds.' % \
+                        (name, (end - start))
+        )
+
+    if 0:   # simple test {{{2}}}
+        # import ipdb; ipdb.set_trace()  # XXX BREAKPOINT
+        # show_chassis_fpc()
+        # get_config()
+        # save_cli('172.19.161.123')
+
+        options['normalize'] = False
+        dev = netconf(options['host'], options['user'],
+                            options['password'])
+
+        host_conf_file = "%s_%s" % (dev.hostname, curr_time())
+        host_conf_file = dev.hostname
+
+        # this is only XML based
+        rpc_get_config = dev.rpc.get_config()
+        # the output format of this does not look good.
+        # rpc_get_config = etree.tostring(rpc_get_config, method='text')
+
+        # this looks neat
+        rpc_get_interface_info = dev.rpc.get_interface_information(
+                                                    {'format': 'text'},
+                                                    interface_name='lo0',
+                                                    terse=True)
+        rpc_get_interface_info = etree.tostring(rpc_get_interface_info)
+
+        mylogger.setLevel(logging.DEBUG)
+        mylogger.debug("now write result to %s" % host_conf_file)
+        write_file(host_conf_file, rpc_get_interface_info)
+
+
+
+    if 0:   # mt test {{{2}}}
+
+        cli_list = ["show version", "show interface lo0 terse", "show system uptime"]
+        save_cli_mthread(host, cli_list)
+
+
+if __name__ == '__main__':          # {{{1}}}
+
+    main()
